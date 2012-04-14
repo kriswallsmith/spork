@@ -56,6 +56,24 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider getMethodAndKey
+     */
+    public function testThen($method, $expected)
+    {
+        $log = array();
+
+        $this->defer->then(function() use(& $log) {
+            $log[] = 'done';
+        }, function() use(& $log) {
+            $log[] = 'fail';
+        });
+
+        $this->defer->$method();
+
+        $this->assertEquals(array($expected), $log);
+    }
+
+    /**
      * @dataProvider getMethod
      */
     public function testMultipleResolve($method)
@@ -99,6 +117,16 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expect ? array($queue) : array(), $log);
     }
 
+    /**
+     * @dataProvider getMethodAndInvalidCallback
+     */
+    public function testInvalidCallback($method, $invalid)
+    {
+        $this->setExpectedException('Spork\Exception\UnexpectedTypeException', 'callable');
+
+        $this->defer->$method($invalid);
+    }
+
     // providers
 
     public function getMethodAndKey()
@@ -126,6 +154,18 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
             array('reject', 'always'),
             array('reject', 'done', false),
             array('reject', 'fail'),
+        );
+    }
+
+    public function getMethodAndInvalidCallback()
+    {
+        return array(
+            array('always', 'foo!'),
+            array('always', array('foo!')),
+            array('done', 'foo!'),
+            array('done', array('foo!')),
+            array('fail', 'foo!'),
+            array('fail', array('foo!')),
         );
     }
 
