@@ -23,6 +23,11 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         $this->manager = new ProcessManager(new DeferredFactory());
     }
 
+    protected function tearDown()
+    {
+        unset($this->manager);
+    }
+
     public function testDoneCallbacks()
     {
         $log = array();

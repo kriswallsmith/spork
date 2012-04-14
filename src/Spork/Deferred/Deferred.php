@@ -45,7 +45,7 @@ class Deferred implements DeferredInterface
             case DeferredInterface::STATE_PENDING:
                 $this->alwaysCallbacks[] = $alwaysCallback;
                 break;
-            case DeferredInterface::STATE_RESOLVED:
+            default:
                 call_user_func_array($alwaysCallback, $this->callbackArgs);
                 break;
         }
@@ -63,7 +63,7 @@ class Deferred implements DeferredInterface
             case DeferredInterface::STATE_PENDING:
                 $this->doneCallbacks[] = $doneCallback;
                 break;
-            default:
+            case DeferredInterface::STATE_RESOLVED:
                 call_user_func_array($doneCallback, $this->callbackArgs);
         }
 

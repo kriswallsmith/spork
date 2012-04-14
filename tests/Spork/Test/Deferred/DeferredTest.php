@@ -1,0 +1,139 @@
+<?php
+
+/*
+ * This file is part of the Spork package, an OpenSky project.
+ *
+ * (c) 2012 OpenSky Project Inc
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Spork\Test;
+
+use Spork\Deferred\Deferred;
+
+class DeferredTest extends \PHPUnit_Framework_TestCase
+{
+    private $defer;
+
+    protected function setUp()
+    {
+        $this->defer = new Deferred();
+    }
+
+    protected function tearDown()
+    {
+        unset($this->defer);
+    }
+
+    /**
+     * @dataProvider getMethodAndKey
+     */
+    public function testCallbackOrder($method, $expected)
+    {
+        $log = array();
+
+        $this->defer->always(function() use(& $log) {
+            $log[] = 'always';
+            $log[] = func_get_args();
+        })->done(function() use(& $log) {
+            $log[] = 'done';
+            $log[] = func_get_args();
+        })->fail(function() use(& $log) {
+            $log[] = 'fail';
+            $log[] = func_get_args();
+        });
+
+        $this->defer->$method(1, 2, 3);
+
+        $this->assertEquals(array(
+            'always',
+            array(1, 2, 3),
+            $expected,
+            array(1, 2, 3),
+        ), $log);
+    }
+
+    /**
+     * @dataProvider getMethod
+     */
+    public function testMultipleResolve($method)
+    {
+        $log = array();
+
+        $this->defer->always(function() use(& $log) {
+            $log[] = 'always';
+        });
+
+        $this->defer->$method();
+        $this->defer->$method();
+
+        $this->assertEquals(array('always'), $log);
+    }
+
+    /**
+     * @dataProvider getMethodAndInvalid
+     */
+    public function testInvalidResolve($method, $invalid)
+    {
+        $this->setExpectedException('LogicException', 'that has already been');
+
+        $this->defer->$method();
+        $this->defer->$invalid();
+    }
+
+    /**
+     * @dataProvider getMethodAndQueue
+     */
+    public function testAlreadyResolved($resolve, $queue, $expect = true)
+    {
+        // resolve the object
+        $this->defer->$resolve();
+
+        $log = array();
+        $this->defer->$queue(function() use(& $log, $queue) {
+            $log[] = $queue;
+        });
+
+        $this->assertEquals($expect ? array($queue) : array(), $log);
+    }
+
+    // providers
+
+    public function getMethodAndKey()
+    {
+        return array(
+            array('resolve', 'done'),
+            array('reject', 'fail'),
+        );
+    }
+
+    public function getMethodAndInvalid()
+    {
+        return array(
+            array('resolve', 'reject'),
+            array('reject', 'resolve'),
+        );
+    }
+
+    public function getMethodAndQueue()
+    {
+        return array(
+            array('resolve', 'always'),
+            array('resolve', 'done'),
+            array('resolve', 'fail', false),
+            array('reject', 'always'),
+            array('reject', 'done', false),
+            array('reject', 'fail'),
+        );
+    }
+
+    public function getMethod()
+    {
+        return array(
+            array('resolve'),
+            array('reject'),
+        );
+    }
+}
