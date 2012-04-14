@@ -20,17 +20,23 @@ class DeferredAggregate implements PromiseInterface
 
     public function __construct(array $children)
     {
-        // connect to each deferred
+        // validate children
         foreach ($children as $child) {
             if (!$child instanceof PromiseInterface) {
                 throw new UnexpectedTypeException($child, 'Spork\Deferred\PromiseInterface');
             }
-
-            $child->always(array($this, 'tick'));
         }
 
         $this->children = $children;
         $this->delegate = new Deferred();
+
+        // connect to each child
+        foreach ($this->children as $child) {
+            $child->always(array($this, 'tick'));
+        }
+
+        // always tick once now
+        $this->tick();
     }
 
     public function getState()
