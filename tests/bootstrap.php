@@ -10,9 +10,14 @@
  */
 
 if (!$loader = @include __DIR__.'/../vendor/.composer/autoload.php') {
-    die('You must set up the project dependencies, run the following commands:'.PHP_EOL.
-        'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
-        'php composer.phar install'.PHP_EOL);
+    echo <<<EOM
+You must set up the project dependencies, run the following commands:
+curl -s http://getcomposer.org/installer | php
+php composer.phar install
+
+EOM;
+
+    exit(1);
 }
 
 $loader->add('Spork\Test', __DIR__);
