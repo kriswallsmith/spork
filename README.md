@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/kriswallsmith/spork.png?branch=master)](http://travis-ci.org/kriswallsmith/spork)
+
 Spork: PHP on a Fork
 --------------------
 
