@@ -97,4 +97,35 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $child3->resolve();
         $this->assertEquals(array('fail'), $log);
     }
+
+    public function testNested()
+    {
+        $child1a = new Deferred();
+        $child1b = new Deferred();
+        $child1 = new DeferredAggregate(array($child1a, $child1b));
+        $child2 = new Deferred();
+
+        $defer = new DeferredAggregate(array($child1, $child2));
+
+        $child1a->resolve();
+        $child1b->resolve();
+        $child2->resolve();
+
+        $this->assertEquals('resolved', $defer->getState());
+    }
+
+    public function testFail()
+    {
+        $child = new Deferred();
+        $defer = new DeferredAggregate(array($child));
+
+        $log = array();
+        $defer->fail(function() use(& $log) {
+            $log[] = 'fail';
+        });
+
+        $child->reject();
+
+        $this->assertEquals(array('fail'), $log);
+    }
 }
