@@ -9,15 +9,11 @@
  * file that was distributed with this source code.
  */
 
-if (!$loader = @include __DIR__.'/../vendor/.composer/autoload.php') {
-    echo <<<EOM
-You must set up the project dependencies, run the following commands:
-curl -s http://getcomposer.org/installer | php
-php composer.phar install
-
-EOM;
-
-    exit(1);
-}
-
-$loader->add('Spork\Test', __DIR__);
+spl_autoload_register(function($class)
+{
+    if (0 === strpos($class, 'Spork\\Test\\') && file_exists($file = __DIR__.'/'.str_replace('\\', '/', $class).'.php')) {
+        require_once $file;
+    } elseif (0 === strpos($class, 'Spork\\') && file_exists($file = __DIR__.'/../src/'.str_replace('\\', '/', $class).'.php')) {
+        require_once $file;
+    }
+});
