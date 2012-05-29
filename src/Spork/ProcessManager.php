@@ -13,6 +13,7 @@ declare(ticks=1);
 
 namespace Spork;
 
+use Spork\Deferred\DeferredFactory;
 use Spork\Deferred\DeferredInterface;
 use Spork\Deferred\FactoryInterface;
 use Spork\Exception\ProcessControlException;
@@ -23,9 +24,9 @@ class ProcessManager
     private $factory;
     private $defers;
 
-    public function __construct(FactoryInterface $factory)
+    public function __construct(FactoryInterface $factory = null)
     {
-        $this->factory = $factory;
+        $this->factory = $factory ?: new DeferredFactory();
         $this->defers = array();
 
         pcntl_signal(SIGCHLD, array($this, 'waitNoHang'));

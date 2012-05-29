@@ -6,10 +6,7 @@ Spork: PHP on a Fork
 ```php
 <?php
 
-use Spork\Deferred\DeferredFactory;
-use Spork\ProcessManager;
-
-$manager = new ProcessManager(new DeferredFactory());
+$manager = new Spork\ProcessManager();
 $manager->fork(function() {
     // do something in another process!
 })->then(function($output, $status) {
