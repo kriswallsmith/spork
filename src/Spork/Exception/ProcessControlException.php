@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Spork package, an OpenSky project.
+ * This file is part of Spork, an OpenSky project.
  *
  * (c) 2012 OpenSky Project Inc
  *
