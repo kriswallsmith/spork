@@ -21,19 +21,19 @@ use Spork\Exception\UnexpectedTypeException;
 class ProcessManager
 {
     private $dispatcher;
-    private $defers;
+    private $forks;
 
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-        $this->defers = array();
+        $this->forks = array();
 
         $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
     }
 
     public function __clone()
     {
-        $this->defers = array();
+        $this->forks = array();
 
         $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
     }
@@ -99,8 +99,8 @@ class ProcessManager
         }
 
         if (0 === $pid) {
-            // reset the stack of defers
-            $this->defers = array();
+            // reset the stack of forks
+            $this->forks = array();
 
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::ON_FORK);
@@ -120,22 +120,20 @@ class ProcessManager
             exit($statusCode);
         }
 
-        return $this->defers[$pid] = new Deferred();
+        return $this->forks[$pid] = new Fork($pid);
     }
 
     /**
-     * Waits for all child processes to exit.
+     * Waits for all child forks to exit.
      */
     public function wait($hang = true)
     {
-        foreach ($this->defers as $pid => $defer) {
-            if (Deferred::STATE_PENDING !== $defer->getState()) {
+        foreach ($this->forks as $pid => $fork) {
+            if (Deferred::STATE_PENDING !== $fork->getState()) {
                 continue;
             }
 
-            $wait = pcntl_waitpid($pid, $status, $hang ? 0 : WNOHANG);
-
-            if ($wait < 1) {
+            if (!$fork->wait($hang)) {
                 continue;
             }
 
@@ -146,11 +144,11 @@ class ProcessManager
                 $output = null;
             }
 
-            $statusCode = pcntl_wexitstatus($status);
+            $statusCode = $fork->getExitStatus();
             if (0 === $statusCode) {
-                $defer->resolve($output, $statusCode, $status);
+                $fork->resolve($output, $statusCode);
             } else {
-                $defer->reject($output, $statusCode, $status);
+                $fork->reject($output, $statusCode);
             }
         }
     }
