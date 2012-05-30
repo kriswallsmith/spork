@@ -65,4 +65,28 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(array('', 'fail'), $log);
     }
+
+    public function testBatchProcessing()
+    {
+        $log = array();
+
+        $list = new \ArrayIterator(range(100, 109));
+        $this->manager->process($list, function($element, $index) {
+            echo $element.' ';
+        })->then(function($defer) use(& $log) {
+            foreach ($defer->getChildren() as $child) {
+                $child->always(function($output) use(& $log) {
+                    $log[] = $output;
+                });
+            }
+        });
+
+        $this->manager->wait();
+
+        $this->assertEquals(array(
+            '100 101 102 103 ',
+            '104 105 106 107 ',
+            '108 109 ',
+        ), $log);
+    }
 }

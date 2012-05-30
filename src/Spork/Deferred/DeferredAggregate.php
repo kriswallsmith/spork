@@ -44,6 +44,11 @@ class DeferredAggregate implements PromiseInterface
         return $this->delegate->getState();
     }
 
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
     public function always($alwaysCallback)
     {
         $this->delegate->always($alwaysCallback);
@@ -79,7 +84,7 @@ class DeferredAggregate implements PromiseInterface
         foreach ($this->children as $child) {
             switch ($child->getState()) {
                 case PromiseInterface::STATE_REJECTED:
-                    $this->delegate->reject();
+                    $this->delegate->reject($this);
 
                     return;
                 case PromiseInterface::STATE_RESOLVED:
@@ -89,7 +94,7 @@ class DeferredAggregate implements PromiseInterface
         }
 
         if (!$pending) {
-            $this->delegate->resolve();
+            $this->delegate->resolve($this);
         }
     }
 }
