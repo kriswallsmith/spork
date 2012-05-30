@@ -80,6 +80,7 @@ class DeferredAggregate implements PromiseInterface
             switch ($child->getState()) {
                 case PromiseInterface::STATE_REJECTED:
                     $this->delegate->reject();
+
                     return;
                 case PromiseInterface::STATE_RESOLVED:
                     --$pending;

@@ -13,6 +13,6 @@ namespace Spork\Deferred;
 
 interface DeferredInterface extends PromiseInterface
 {
-    function resolve();
-    function reject();
+    public function resolve();
+    public function reject();
 }

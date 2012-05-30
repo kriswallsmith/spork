@@ -13,5 +13,5 @@ namespace Spork\Deferred;
 
 interface FactoryInterface
 {
-    function createDeferred();
+    public function createDeferred();
 }
