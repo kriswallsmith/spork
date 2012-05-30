@@ -30,63 +30,58 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testDoneCallbacks()
     {
-        $log = array();
+        $success = null;
 
-        $this->manager->fork(function() use(& $log) {
-            echo 'child';
-        })->always(function($output, $status) use(& $log) {
-            $log[] = $output;
-        })->done(function($output, $status) use(& $log) {
-            $log[] = 'done';
-        })->fail(function($output, $status) use(& $log) {
-            $log[] = 'fail';
+        $fork = $this->manager->fork(function() {
+            echo 'output';
+            return 'result';
+        })->done(function() use(& $success) {
+            $success = true;
+        })->fail(function() use(& $success) {
+            $success = false;
         });
 
         $this->manager->wait();
 
-        $this->assertEquals(array('child', 'done'), $log);
+        $this->assertTrue($success);
+        $this->assertEquals('output', $fork->getOutput());
+        $this->assertEquals('result', $fork->getResult());
     }
 
     public function testFailCallbacks()
     {
-        $log = array();
+        $success = null;
 
-        $this->manager->fork(function() use(& $log) {
-            throw new \Exception('child fail');
-        })->always(function($output, $status) use(& $log) {
-            $log[] = $output;
-        })->done(function($output, $status) use(& $log) {
-            $log[] = 'done';
-        })->fail(function($output, $status) use(& $log) {
-            $log[] = 'fail';
+        $fork = $this->manager->fork(function() {
+            throw new \Exception('child error');
+        })->done(function() use(& $success) {
+            $success = true;
+        })->fail(function() use(& $success) {
+            $success = false;
         });
 
         $this->manager->wait();
 
-        $this->assertEquals(array('', 'fail'), $log);
+        $this->assertFalse($success);
+        $this->assertNotEmpty($fork->getError());
     }
 
     public function testBatchProcessing()
     {
-        $log = array();
+        $expected = range(100, 109);
+        $list = new \ArrayIterator($expected);
 
-        $list = new \ArrayIterator(range(100, 109));
-        $this->manager->process($list, function($element, $index) {
-            echo $element.' ';
-        })->then(function($defer) use(& $log) {
-            foreach ($defer->getChildren() as $child) {
-                $child->always(function($output) use(& $log) {
-                    $log[] = $output;
-                });
-            }
+        $defer = $this->manager->process($list, function($element, $index) {
+            return $element;
         });
-
         $this->manager->wait();
 
-        $this->assertEquals(array(
-            '100 101 102 103 ',
-            '104 105 106 107 ',
-            '108 109 ',
-        ), $log);
+        $actual = array();
+        foreach ($defer->getChildren() as $fork) {
+            $this->assertInternalType('array', $result = $fork->getResult());
+            $actual = array_merge($actual, $result);
+        }
+
+        $this->assertEquals($expected, $actual);
     }
 }

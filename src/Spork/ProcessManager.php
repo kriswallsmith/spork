@@ -22,30 +22,32 @@ class ProcessManager
 {
     private $dispatcher;
     private $forks;
+    private $zombieOkay;
 
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
         $this->forks = array();
+        $this->zombieOkay = false;
 
-        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
-    }
-
-    public function __clone()
-    {
-        $this->forks = array();
-
-        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
+        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'tick'));
     }
 
     public function __destruct()
     {
-        $this->wait();
+        if (!$this->zombieOkay) {
+            $this->wait();
+        }
     }
 
     public function getEventDispatcher()
     {
         return $this->dispatcher;
+    }
+
+    public function zombieOkay($zombieOkay = true)
+    {
+        $this->zombieOkay = $zombieOkay;
     }
 
     /**
@@ -68,15 +70,18 @@ class ProcessManager
 
             $defers[] = $this->fork(function() use($list, $callable, $min, $max) {
                 $cursor = 0;
+                $values = array();
                 foreach ($list as $index => $element) {
                     if ($cursor >= $min) {
-                        call_user_func($callable, $element, $index, $list);
+                        $values[] = call_user_func($callable, $element, $index, $list);
                     }
 
                     if (++$cursor >= $max) {
                         break;
                     }
                 }
+
+                return $values;
             });
         }
 
@@ -99,8 +104,8 @@ class ProcessManager
         }
 
         if (0 === $pid) {
-            // reset the stack of forks
-            $this->forks = array();
+            // setup the fifo (blocks until parent connects)
+            $fifo = new Fifo();
 
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::ON_FORK);
@@ -108,58 +113,51 @@ class ProcessManager
             ob_start();
 
             try {
-                call_user_func($callable);
-                $statusCode = 0;
+                $result = call_user_func($callable);
+                $exitStatus = is_integer($result) ? $result : 0;
+                $error = null;
             } catch (\Exception $e) {
-                $statusCode = 1;
+                $result = null;
+                $exitStatus = 1;
+                $error = array(
+                    'class'   => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                );
             }
 
-            // dump the output to a file
-            file_put_contents($this->getOutputFile(posix_getpid()), ob_get_clean());
+            // phone home
+            $fifo->send(array($result, ob_get_clean(), $error));
 
-            exit($statusCode);
+            exit($exitStatus);
         }
 
-        return $this->forks[$pid] = new Fork($pid);
+        // take a moment and connect to the fifo
+        usleep(50000);
+        $fifo = new Fifo($pid);
+
+        return $this->forks[] = new Fork($pid, $fifo);
     }
 
-    /**
-     * Waits for all child forks to exit.
-     */
     public function wait($hang = true)
     {
-        foreach ($this->forks as $pid => $fork) {
+        foreach ($this->forks as $fork) {
             if (Deferred::STATE_PENDING !== $fork->getState()) {
                 continue;
             }
 
-            if (!$fork->wait($hang)) {
-                continue;
-            }
+            $fork->wait($hang);
 
-            if (file_exists($file = $this->getOutputFile($pid))) {
-                $output = file_get_contents($file);
-                unlink($file);
-            } else {
-                $output = null;
-            }
-
-            $statusCode = $fork->getExitStatus();
-            if (0 === $statusCode) {
-                $fork->resolve($output, $statusCode);
-            } else {
-                $fork->reject($output, $statusCode);
+            if ($fork->isExited()) {
+                $fork->isSuccessful() ? $fork->resolve() : $fork->reject();
             }
         }
     }
 
-    public function waitNoHang()
+    public function tick()
     {
         $this->wait(false);
-    }
-
-    private function getOutputFile($pid)
-    {
-        return realpath(sys_get_temp_dir()).'/spork_'.$pid.'.out';
     }
 }

@@ -18,29 +18,50 @@ class Fork implements DeferredInterface
 {
     private $defer;
     private $pid;
+    private $fifo;
     private $status;
+    private $result;
+    private $output;
+    private $error;
 
-    public function __construct($pid)
+    public function __construct($pid, Fifo $fifo)
     {
         $this->defer = new Deferred();
-        $this->pid = $pid;
+        $this->pid   = $pid;
+        $this->fifo  = $fifo;
     }
 
-    public function getPid()
-    {
-        return $this->pid;
-    }
-
-    /**
-     * Wait for the process to exit.
-     *
-     * @param Boolean $hang Whether to wait or exit immediately
-     *
-     * @return Boolean Returns true if the process has exited
-     */
     public function wait($hang = true)
     {
-        return $this->pid === pcntl_waitpid($this->pid, $this->status, ($hang ? 0 : WNOHANG) | WUNTRACED);
+        if ($this->pid === pcntl_waitpid($this->pid, $this->status, ($hang ? 0 : WNOHANG) | WUNTRACED)) {
+            usleep(50000);
+            list($this->result, $this->output, $this->error) = $this->fifo->receive();
+        }
+    }
+
+    public function tick()
+    {
+        return $this->wait(false);
+    }
+
+    public function getResult()
+    {
+        return $this->result;
+    }
+
+    public function getOutput()
+    {
+        return $this->output;
+    }
+
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    public function isSuccessful()
+    {
+        return 0 === $this->getExitStatus();
     }
 
     public function isExited()
@@ -115,6 +136,8 @@ class Fork implements DeferredInterface
     public function resolve()
     {
         $args = func_get_args();
+        array_unshift($args, $this);
+
         call_user_func_array(array($this->defer, 'resolve'), $args);
 
         return $this;
@@ -123,6 +146,8 @@ class Fork implements DeferredInterface
     public function reject()
     {
         $args = func_get_args();
+        array_unshift($args, $this);
+
         call_user_func_array(array($this->defer, 'reject'), $args);
 
         return $this;
