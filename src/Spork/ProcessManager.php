@@ -46,7 +46,7 @@ class ProcessManager
     /**
      * Process each item in an iterator through a callable.
      */
-    public function process(\Traversable $list, $callable, array $arguments = array())
+    public function process(\Traversable $list, $callable)
     {
         if (!is_callable($callable)) {
             throw new UnexpectedTypeException($callable, 'callable');
@@ -61,11 +61,11 @@ class ProcessManager
             $min = $batch * $limit;
             $max = $min + $limit;
 
-            $defers[] = $this->fork(function() use($list, $callable, $arguments, $min, $max) {
+            $defers[] = $this->fork(function() use($list, $callable, $min, $max) {
                 $cursor = 0;
                 foreach ($list as $index => $element) {
                     if ($cursor >= $min) {
-                        call_user_func_array($callable, array_merge(array($element, $index, $list), $arguments));
+                        call_user_func($callable, $element, $index, $list);
                     }
 
                     if (++$cursor >= $max) {
@@ -81,7 +81,7 @@ class ProcessManager
     /**
      * Forks something into another process and returns a deferred object.
      */
-    public function fork($callable, array $arguments = array())
+    public function fork($callable)
     {
         if (!is_callable($callable)) {
             throw new UnexpectedTypeException($callable, 'callable');
@@ -100,7 +100,7 @@ class ProcessManager
             ob_start();
 
             try {
-                call_user_func_array($callable, $arguments);
+                call_user_func($callable);
                 $statusCode = 0;
             } catch (\Exception $e) {
                 $statusCode = 1;
