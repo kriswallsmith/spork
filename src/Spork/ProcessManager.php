@@ -11,10 +11,8 @@
 
 namespace Spork;
 
+use Spork\Deferred\Deferred;
 use Spork\Deferred\DeferredAggregate;
-use Spork\Deferred\DeferredFactory;
-use Spork\Deferred\DeferredInterface;
-use Spork\Deferred\FactoryInterface;
 use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
 use Spork\Exception\ProcessControlException;
@@ -23,13 +21,11 @@ use Spork\Exception\UnexpectedTypeException;
 class ProcessManager
 {
     private $dispatcher;
-    private $factory;
     private $defers;
 
-    public function __construct(EventDispatcherInterface $dispatcher, FactoryInterface $factory = null)
+    public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-        $this->factory = $factory ?: new DeferredFactory();
         $this->defers = array();
 
         $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
@@ -84,7 +80,7 @@ class ProcessManager
             });
         }
 
-        return $this->factory->createDeferredAggregate($defers);
+        return new DeferredAggregate($defers);
     }
 
     /**
@@ -124,7 +120,7 @@ class ProcessManager
             exit($statusCode);
         }
 
-        return $this->defers[$pid] = $this->factory->createDeferred();
+        return $this->defers[$pid] = new Deferred();
     }
 
     /**
@@ -133,7 +129,7 @@ class ProcessManager
     public function wait($hang = true)
     {
         foreach ($this->defers as $pid => $defer) {
-            if (DeferredInterface::STATE_PENDING !== $defer->getState()) {
+            if (Deferred::STATE_PENDING !== $defer->getState()) {
                 continue;
             }
 
