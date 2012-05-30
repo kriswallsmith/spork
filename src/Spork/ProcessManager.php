@@ -13,6 +13,7 @@ declare(ticks=1);
 
 namespace Spork;
 
+use Spork\Deferred\DeferredAggregate;
 use Spork\Deferred\DeferredFactory;
 use Spork\Deferred\DeferredInterface;
 use Spork\Deferred\FactoryInterface;
@@ -40,6 +41,41 @@ class ProcessManager
     public function __destruct()
     {
         $this->wait();
+    }
+
+    /**
+     * Process each item in an iterator through a callable.
+     */
+    public function process(\Traversable $list, $callable, array $arguments = array())
+    {
+        if (!is_callable($callable)) {
+            throw new UnexpectedTypeException($callable, 'callable');
+        }
+
+        $total = $list instanceof \Countable ? $list->count() : iterator_count($list);
+        $forks = 3;
+        $limit = ceil($total / $forks);
+
+        $defers = array();
+        for ($batch = 0; $batch < $forks; $batch++) {
+            $min = $batch * $limit;
+            $max = $min + $limit;
+
+            $defers[] = $this->fork(function() use($list, $callable, $arguments, $min, $max) {
+                $cursor = 0;
+                foreach ($list as $index => $element) {
+                    if ($cursor >= $min) {
+                        call_user_func_array($callable, array_merge(array($element, $index, $list), $arguments));
+                    }
+
+                    if (++$cursor >= $max) {
+                        break;
+                    }
+                }
+            });
+        }
+
+        return new DeferredAggregate($defers);
     }
 
     /**

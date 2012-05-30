@@ -13,3 +13,19 @@ $manager->fork(function() {
     // do something in the parent process when it's done!
 });
 ```
+
+### Example: Upload images to your CDN
+
+Feed an iterator into the process manager and it will break the job into
+multiple batches and spread them across many processes.
+
+```php
+<?php
+
+$images = new RecursiveDirectoryIterator('/path/to/images');
+$images = new RecursiveIteratorIterator($it);
+
+$manager->process($images, function(SplFileInfo $file) {
+    // upload this file
+});
+```
