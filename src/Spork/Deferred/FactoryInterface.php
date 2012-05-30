@@ -14,4 +14,5 @@ namespace Spork\Deferred;
 interface FactoryInterface
 {
     function createDeferred();
+    function createDeferredAggregate(array $children);
 }

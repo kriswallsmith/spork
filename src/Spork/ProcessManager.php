@@ -99,7 +99,7 @@ class ProcessManager
             });
         }
 
-        return new DeferredAggregate($defers);
+        return $this->factory->createDeferredAggregate($defers);
     }
 
     /**

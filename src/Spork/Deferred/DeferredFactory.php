@@ -17,4 +17,9 @@ class DeferredFactory implements FactoryInterface
     {
         return new Deferred();
     }
+
+    public function createDeferredAggregate(array $children)
+    {
+        return new DeferredAggregate($children);
+    }
 }
