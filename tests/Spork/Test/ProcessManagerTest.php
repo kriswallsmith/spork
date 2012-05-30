@@ -11,6 +11,7 @@
 
 namespace Spork\Test;
 
+use Spork\EventDispatcher\EventDispatcher;
 use Spork\ProcessManager;
 
 class ProcessManagerTest extends \PHPUnit_Framework_TestCase
@@ -19,7 +20,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->manager = new ProcessManager();
+        $this->manager = new ProcessManager(new EventDispatcher());
     }
 
     protected function tearDown()

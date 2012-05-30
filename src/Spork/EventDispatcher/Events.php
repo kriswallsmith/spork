@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Spork;
+namespace Spork\EventDispatcher;
 
 final class Events
 {

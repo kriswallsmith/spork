@@ -9,18 +9,16 @@
  * file that was distributed with this source code.
  */
 
-declare(ticks=1);
-
 namespace Spork;
 
 use Spork\Deferred\DeferredAggregate;
 use Spork\Deferred\DeferredFactory;
 use Spork\Deferred\DeferredInterface;
 use Spork\Deferred\FactoryInterface;
+use Spork\EventDispatcher\EventDispatcherInterface;
+use Spork\EventDispatcher\Events;
 use Spork\Exception\ProcessControlException;
 use Spork\Exception\UnexpectedTypeException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ProcessManager
 {
@@ -28,18 +26,20 @@ class ProcessManager
     private $factory;
     private $defers;
 
-    public function __construct(EventDispatcherInterface $dispatcher = null, FactoryInterface $factory = null)
+    public function __construct(EventDispatcherInterface $dispatcher, FactoryInterface $factory = null)
     {
-        $this->dispatcher = $dispatcher ?: new EventDispatcher();
+        $this->dispatcher = $dispatcher;
         $this->factory = $factory ?: new DeferredFactory();
         $this->defers = array();
 
-        pcntl_signal(SIGCHLD, array($this, 'waitNoHang'));
+        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
     }
 
     public function __clone()
     {
         $this->defers = array();
+
+        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'waitNoHang'));
     }
 
     public function __destruct()
@@ -50,21 +50,6 @@ class ProcessManager
     public function getEventDispatcher()
     {
         return $this->dispatcher;
-    }
-
-    public function setEventDispatcher(EventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-    }
-
-    public function getDeferredFactory()
-    {
-        return $this->factory;
-    }
-
-    public function setDeferredFactory(FactoryInterface $factory)
-    {
-        $this->factory = $factory;
     }
 
     /**
