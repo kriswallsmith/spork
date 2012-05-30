@@ -19,14 +19,18 @@ use Spork\Deferred\DeferredInterface;
 use Spork\Deferred\FactoryInterface;
 use Spork\Exception\ProcessControlException;
 use Spork\Exception\UnexpectedTypeException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ProcessManager
 {
+    private $dispatcher;
     private $factory;
     private $defers;
 
-    public function __construct(FactoryInterface $factory = null)
+    public function __construct(EventDispatcherInterface $dispatcher = null, FactoryInterface $factory = null)
     {
+        $this->dispatcher = $dispatcher ?: new EventDispatcher();
         $this->factory = $factory ?: new DeferredFactory();
         $this->defers = array();
 
@@ -41,6 +45,26 @@ class ProcessManager
     public function __destruct()
     {
         $this->wait();
+    }
+
+    public function getEventDispatcher()
+    {
+        return $this->dispatcher;
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
+    public function getDeferredFactory()
+    {
+        return $this->factory;
+    }
+
+    public function setDeferredFactory(FactoryInterface $factory)
+    {
+        $this->factory = $factory;
     }
 
     /**
@@ -96,6 +120,9 @@ class ProcessManager
         if (0 === $pid) {
             // reset the stack of defers
             $this->defers = array();
+
+            // dispatch an event so the system knows it's in a new process
+            $this->dispatcher->dispatch(Events::ON_FORK);
 
             ob_start();
 
