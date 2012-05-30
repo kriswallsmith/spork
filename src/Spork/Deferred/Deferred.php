@@ -106,7 +106,7 @@ class Deferred implements DeferredInterface
         }
 
         if (DeferredInterface::STATE_RESOLVED === $this->state) {
-            return;
+            return $this;
         }
 
         $this->state = DeferredInterface::STATE_RESOLVED;
@@ -130,7 +130,7 @@ class Deferred implements DeferredInterface
         }
 
         if (DeferredInterface::STATE_REJECTED === $this->state) {
-            return;
+            return $this;
         }
 
         $this->state = DeferredInterface::STATE_REJECTED;
