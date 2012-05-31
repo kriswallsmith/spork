@@ -11,7 +11,7 @@
 
 namespace Spork;
 
-use Spork\Deferred\Deferred;
+use Spork\Deferred\DeferredInterface;
 use Spork\Deferred\DeferredAggregate;
 use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
@@ -144,7 +144,7 @@ class ProcessManager
     public function wait($hang = true)
     {
         foreach ($this->forks as $fork) {
-            if (Deferred::STATE_PENDING !== $fork->getState()) {
+            if (DeferredInterface::STATE_PENDING !== $fork->getState()) {
                 continue;
             }
 
