@@ -29,8 +29,6 @@ class ProcessManager
         $this->dispatcher = $dispatcher;
         $this->forks = array();
         $this->zombieOkay = false;
-
-        $this->dispatcher->addSignalListener(SIGCHLD, array($this, 'tick'));
     }
 
     public function __destruct()
@@ -137,8 +135,7 @@ class ProcessManager
             exit($exitStatus);
         }
 
-        // take a moment and connect to the fifo
-        usleep(50000);
+        // connect to the fifo
         $fifo = new Fifo($pid);
 
         return $this->forks[] = new Fork($pid, $fifo);
@@ -157,10 +154,5 @@ class ProcessManager
                 $fork->isSuccessful() ? $fork->resolve() : $fork->reject();
             }
         }
-    }
-
-    public function tick()
-    {
-        $this->wait(false);
     }
 }
