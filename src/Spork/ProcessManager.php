@@ -103,6 +103,9 @@ class ProcessManager
         }
 
         if (0 === $pid) {
+            // reset the list of child processes
+            $this->forks = array();
+
             // setup the fifo (blocks until parent connects)
             $fifo = new Fifo();
 
