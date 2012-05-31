@@ -9,8 +9,10 @@ Spork: PHP on a Fork
 $manager = new Spork\ProcessManager();
 $manager->fork(function() {
     // do something in another process!
-})->then(function($output, $status) {
+    return 'Hello from '.getmypid();
+})->then(function(Spork\Fork $fork) {
     // do something in the parent process when it's done!
+    echo "{$fork->getPid()} says '{$fork->getResult()}'\n";
 });
 ```
 
