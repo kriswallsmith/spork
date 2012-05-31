@@ -129,6 +129,7 @@ class ProcessManager
 
             // phone home
             $fifo->send(array($result, ob_get_clean(), $error));
+            $fifo->close();
 
             exit($exitStatus);
         }

@@ -36,6 +36,7 @@ class Fork implements DeferredInterface
         if ($this->pid === pcntl_waitpid($this->pid, $this->status, ($hang ? 0 : WNOHANG) | WUNTRACED)) {
             usleep(50000);
             list($this->result, $this->output, $this->error) = $this->fifo->receive();
+            $this->fifo->close();
         }
     }
 
