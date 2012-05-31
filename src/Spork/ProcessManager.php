@@ -53,14 +53,13 @@ class ProcessManager
     /**
      * Process each item in an iterator through a callable.
      */
-    public function process(\Traversable $list, $callable)
+    public function process(\Traversable $list, $callable, $forks = 3)
     {
         if (!is_callable($callable)) {
             throw new UnexpectedTypeException($callable, 'callable');
         }
 
         $total = $list instanceof \Countable ? $list->count() : iterator_count($list);
-        $forks = 3;
         $limit = ceil($total / $forks);
 
         $defers = array();
