@@ -30,4 +30,9 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherInte
         $this->addListener('spork.signal.'.$signal, $callable);
         pcntl_signal($signal, array($this, 'dispatchSignal'));
     }
+
+    public function removeSignalListener($signal, $callable)
+    {
+        $this->removeListener('spork.signal.'.$signal, $callable);
+    }
 }
