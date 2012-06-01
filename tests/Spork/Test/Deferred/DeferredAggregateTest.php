@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Spork\Test;
+namespace Spork\Test\Deferred;
 
 use Spork\Deferred\Deferred;
 use Spork\Deferred\DeferredAggregate;
