@@ -22,14 +22,16 @@ use Spork\Exception\UnexpectedTypeException;
 class ProcessManager
 {
     private $dispatcher;
-    private $forks;
+    private $debug;
     private $zombieOkay;
+    private $forks;
 
-    public function __construct(EventDispatcherInterface $dispatcher)
+    public function __construct(EventDispatcherInterface $dispatcher, $debug = false)
     {
         $this->dispatcher = $dispatcher;
-        $this->forks = array();
+        $this->debug = $debug;
         $this->zombieOkay = false;
+        $this->forks = array();
     }
 
     public function __destruct()
@@ -42,6 +44,11 @@ class ProcessManager
     public function getEventDispatcher()
     {
         return $this->dispatcher;
+    }
+
+    public function setDebug($debug)
+    {
+        $this->debug = $debug;
     }
 
     public function zombieOkay($zombieOkay = true)
@@ -94,11 +101,11 @@ class ProcessManager
                 $result = null;
                 $exitStatus = 1;
                 $error = array(
-                    'class'   => get_class($e),
-                    'message' => $e->getMessage(),
-                    'code'    => $e->getCode(),
-                    'file'    => $e->getFile(),
-                    'line'    => $e->getLine(),
+                    get_class($e),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine(),
+                    $e->getCode(),
                 );
             }
 
@@ -112,7 +119,7 @@ class ProcessManager
         // connect to the fifo
         $fifo = new Fifo($pid);
 
-        return $this->forks[] = new Fork($pid, $fifo);
+        return $this->forks[] = new Fork($pid, $fifo, $this->debug);
     }
 
     public function wait($hang = true)

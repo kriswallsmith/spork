@@ -13,22 +13,37 @@ namespace Spork;
 
 use Spork\Deferred\Deferred;
 use Spork\Deferred\DeferredInterface;
+use Spork\Exception\ForkException;
 
 class Fork implements DeferredInterface
 {
     private $defer;
     private $pid;
     private $fifo;
+    private $debug;
+    private $name;
     private $status;
     private $result;
     private $output;
     private $error;
 
-    public function __construct($pid, Fifo $fifo)
+    public function __construct($pid, Fifo $fifo, $debug = false)
     {
         $this->defer = new Deferred();
         $this->pid   = $pid;
         $this->fifo  = $fifo;
+        $this->debug = $debug;
+        $this->name  = '<anonymous>';
+    }
+
+    /**
+     * Assign a name to the current fork (useful for debugging).
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function wait($hang = true)
@@ -36,6 +51,10 @@ class Fork implements DeferredInterface
         if ($this->pid === pcntl_waitpid($this->pid, $this->status, ($hang ? 0 : WNOHANG) | WUNTRACED)) {
             list($this->result, $this->output, $this->error) = $this->fifo->receive();
             $this->fifo->close();
+
+            if ($this->debug && $this->error) {
+                throw new ForkException($this->name, $this->pid, $this->error);
+            }
         }
     }
 

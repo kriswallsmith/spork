@@ -21,6 +21,7 @@ class BatchJob
     private $manager;
     private $data;
     private $strategy;
+    private $name;
     private $callback;
 
     public function __construct(ProcessManager $manager, $data = null, StrategyInterface $strategy = null)
@@ -28,6 +29,14 @@ class BatchJob
         $this->manager = $manager;
         $this->data = $data;
         $this->strategy = $strategy ?: new ChunkStrategy();
+        $this->name = '<anonymous>';
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function setStrategy(StrategyInterface $strategy)
@@ -61,7 +70,7 @@ class BatchJob
             $this->setCallback($callback);
         }
 
-        return $this->manager->fork($this);
+        return $this->manager->fork($this)->setName($this->name.' batch');
     }
 
     /**
@@ -72,8 +81,11 @@ class BatchJob
     public function __invoke()
     {
         $forks = array();
-        foreach ($this->strategy->createBatches($this->data) as $batch) {
-            $forks[] = $this->manager->fork($this->strategy->createRunner($batch, $this->callback));
+        foreach ($this->strategy->createBatches($this->data) as $index => $batch) {
+            $forks[] = $this->manager
+                ->fork($this->strategy->createRunner($batch, $this->callback))
+                ->setName(sprintf('%s batch #%d', $this->name, $index))
+            ;
         }
 
         // block until all forks have exited
