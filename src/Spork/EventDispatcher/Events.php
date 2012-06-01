@@ -14,7 +14,12 @@ namespace Spork\EventDispatcher;
 final class Events
 {
     /**
-     * Notifies the application it is in a new process.
+     * Dispatched in the parent process before forking.
      */
-    const ON_FORK = 'spork.fork';
+    const PRE_FORK = 'spork.pre_fork';
+
+    /**
+     * Notifies in the child process after forking.
+     */
+    const POST_FORK = 'spork.post_fork';
 }

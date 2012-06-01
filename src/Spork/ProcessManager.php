@@ -75,9 +75,10 @@ class ProcessManager
             throw new UnexpectedTypeException($callable, 'callable');
         }
 
-        $pid = pcntl_fork();
+        // allow the system to cleanup before forking
+        $this->dispatcher->dispatch(Events::PRE_FORK);
 
-        if (-1 === $pid) {
+        if (-1 === $pid = pcntl_fork()) {
             throw new ProcessControlException('Unable to fork a new process');
         }
 
@@ -89,7 +90,7 @@ class ProcessManager
             $fifo = new Fifo();
 
             // dispatch an event so the system knows it's in a new process
-            $this->dispatcher->dispatch(Events::ON_FORK);
+            $this->dispatcher->dispatch(Events::POST_FORK);
 
             ob_start();
 
