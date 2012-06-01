@@ -46,6 +46,11 @@ class ProcessManager
         return $this->dispatcher;
     }
 
+    public function addListener($eventName, $listener, $priority = 0)
+    {
+        $this->dispatcher->addListener($eventName, $listener, $priority);
+    }
+
     public function setDebug($debug)
     {
         $this->debug = $debug;
