@@ -40,7 +40,7 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
         unset($this->mongo, $this->manager);
     }
 
-    public function testFoo()
+    public function testBatchJob()
     {
         $coll = $this->mongo->spork->widgets;
 
