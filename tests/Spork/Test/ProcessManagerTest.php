@@ -69,19 +69,13 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
     public function testBatchProcessing()
     {
         $expected = range(100, 109);
-        $list = new \ArrayIterator($expected);
 
-        $defer = $this->manager->process($list, function($element, $index) {
-            return $element;
+        $fork = $this->manager->process($expected, function($item) {
+            return $item;
         });
+
         $this->manager->wait();
 
-        $actual = array();
-        foreach ($defer->getChildren() as $fork) {
-            $this->assertInternalType('array', $result = $fork->getResult());
-            $actual = array_merge($actual, $result);
-        }
-
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, $fork->getResult());
     }
 }

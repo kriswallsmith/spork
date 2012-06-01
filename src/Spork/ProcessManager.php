@@ -11,8 +11,9 @@
 
 namespace Spork;
 
+use Spork\Batch\BatchJob;
+use Spork\Batch\Strategy\StrategyInterface;
 use Spork\Deferred\DeferredInterface;
-use Spork\Deferred\DeferredAggregate;
 use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
 use Spork\Exception\ProcessControlException;
@@ -48,41 +49,14 @@ class ProcessManager
         $this->zombieOkay = $zombieOkay;
     }
 
-    /**
-     * Process each item in an iterator through a callable.
-     */
-    public function process(\Traversable $list, $callable, $forks = 3)
+    public function createBatchJob($data = null, StrategyInterface $strategy = null)
     {
-        if (!is_callable($callable)) {
-            throw new UnexpectedTypeException($callable, 'callable');
-        }
+        return new BatchJob($this, $data, $strategy);
+    }
 
-        $total = $list instanceof \Countable ? $list->count() : iterator_count($list);
-        $limit = ceil($total / $forks);
-
-        $defers = array();
-        for ($batch = 0; $batch < $forks; $batch++) {
-            $min = $batch * $limit;
-            $max = $min + $limit;
-
-            $defers[] = $this->fork(function() use($list, $callable, $min, $max) {
-                $cursor = 0;
-                $values = array();
-                foreach ($list as $index => $element) {
-                    if ($cursor >= $min) {
-                        $values[] = call_user_func($callable, $element, $index, $list);
-                    }
-
-                    if (++$cursor >= $max) {
-                        break;
-                    }
-                }
-
-                return $values;
-            });
-        }
-
-        return new DeferredAggregate($defers);
+    public function process($data, $callable, StrategyInterface $strategy = null)
+    {
+        return $this->createBatchJob($data, $strategy)->execute($callable);
     }
 
     /**
