@@ -36,7 +36,10 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        $this->mongo->close();
+        if ($this->mongo) {
+            $this->mongo->close();
+        }
+
         unset($this->mongo, $this->manager);
     }
 
