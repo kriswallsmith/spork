@@ -24,6 +24,8 @@ use Spork\Exception\UnexpectedTypeException;
  */
 class MongoStrategy extends AbstractStrategy
 {
+    const DATA_CLASS = 'MongoCursor';
+
     private $size;
 
     public function __construct($size = 3)
@@ -33,8 +35,9 @@ class MongoStrategy extends AbstractStrategy
 
     public function createBatches($cursor)
     {
-        if (!$cursor instanceof \MongoCursor) {
-            throw new UnexpectedTypeException($cursor, 'MongoCursor');
+        $expected = static::DATA_CLASS;
+        if (!$cursor instanceof $expected) {
+            throw new UnexpectedTypeException($cursor, $expected);
         }
 
         $limit = ceil($cursor->count() / $this->size);
