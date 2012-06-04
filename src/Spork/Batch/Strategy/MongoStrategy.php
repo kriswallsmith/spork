@@ -27,10 +27,18 @@ class MongoStrategy extends AbstractStrategy
     const DATA_CLASS = 'MongoCursor';
 
     private $size;
+    private $skip;
 
-    public function __construct($size = 3)
+    /**
+     * Constructor.
+     *
+     * @param integer $size The number of batches to create
+     * @param integer $skip The number of documents to skip
+     */
+    public function __construct($size = 3, $skip = 0)
     {
         $this->size = $size;
+        $this->skip = $skip;
     }
 
     public function createBatches($cursor)
@@ -40,12 +48,13 @@ class MongoStrategy extends AbstractStrategy
             throw new UnexpectedTypeException($cursor, $expected);
         }
 
-        $limit = ceil($cursor->count() / $this->size);
+        $skip  = $this->skip;
+        $limit = ceil(($cursor->count() - $skip) / $this->size);
 
         $batches = array();
         for ($i = 0; $i < $this->size; $i++) {
-            $batches[] = function() use($cursor, $i, $limit) {
-                return $cursor->skip($i * $limit)->limit($limit);
+            $batches[] = function() use($cursor, $skip, $i, $limit) {
+                return $cursor->skip($skip + $i * $limit)->limit($limit);
             };
         }
 
