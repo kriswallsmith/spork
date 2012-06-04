@@ -15,6 +15,7 @@ use Spork\Exception\ProcessControlException;
 
 class Fifo
 {
+    private $pid;
     private $read;
     private $write;
 
@@ -31,8 +32,10 @@ class Fifo
             $modes = array('read', 'write');
         }
 
+        $this->pid = $pid;
+
         foreach (array_combine($directions, $modes) as $direction => $mode) {
-            $fifo = realpath(sys_get_temp_dir()).'/spork'.$pid.'.'.$direction;
+            $fifo = realpath(sys_get_temp_dir()).'/spork'.$this->pid.'.'.$direction;
 
             if (!file_exists($fifo) && !posix_mkfifo($fifo, 0600) && 17 !== $error = posix_get_last_error()) {
                 throw new ProcessControlException(sprintf('Error while creating FIFO: %s (%d)', posix_strerror($error), $error));
@@ -56,11 +59,29 @@ class Fifo
         return unserialize($data);
     }
 
-    public function send($data)
+    /**
+     * Writes data to the FIFO and optionally signals the process.
+     *
+     * @param mixed $data   The data to send
+     * @param mixed $signal A signal to send upon writing
+     */
+    public function send($data, $signal = null)
     {
         if (false === fwrite($this->write, serialize($data))) {
             throw new ProcessControlException('Unable to write to FIFO');
         }
+
+        if (null !== $signal) {
+            $this->signal($signal);
+        }
+    }
+
+    /**
+     * Sends a signal to the process.
+     */
+    public function signal($signal)
+    {
+        return posix_kill($this->pid, $signal);
     }
 
     public function close()

@@ -156,4 +156,14 @@ class ProcessManager
 
         return $this->forks[$pid]->wait($hang);
     }
+
+    /**
+     * Sends a signal to all forks.
+     */
+    public function killAll($signal = SIGINT)
+    {
+        foreach ($this->forks as $fork) {
+            $fork->kill($signal);
+        }
+    }
 }

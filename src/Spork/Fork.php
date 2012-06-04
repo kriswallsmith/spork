@@ -87,6 +87,11 @@ class Fork implements DeferredInterface
         }
     }
 
+    public function kill($signal = SIGINT)
+    {
+        return $this->fifo->signal($signal);
+    }
+
     public function getResult()
     {
         return $this->result;
