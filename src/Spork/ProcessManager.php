@@ -125,21 +125,35 @@ class ProcessManager
         // connect to the fifo
         $fifo = new Fifo($pid);
 
-        return $this->forks[] = new Fork($pid, $fifo, $this->debug);
+        return $this->forks[$pid] = new Fork($pid, $fifo, $this->debug);
     }
 
     public function wait($hang = true)
     {
         foreach ($this->forks as $fork) {
-            if (DeferredInterface::STATE_PENDING !== $fork->getState()) {
-                continue;
-            }
-
             $fork->wait($hang);
-
-            if ($fork->isExited()) {
-                $fork->isSuccessful() ? $fork->resolve() : $fork->reject();
-            }
         }
+    }
+
+    public function waitForNext($hang = true)
+    {
+        if (-1 === $pid = pcntl_wait($status, ($hang ? WNOHANG : 0) | WUNTRACED)) {
+            throw new ProcessControlException('Error while waiting for next fork to exit');
+        }
+
+        if (isset($this->forks[$pid])) {
+            $this->forks[$pid]->processWaitStatus($status);
+
+            return $this->forks[$pid];
+        }
+    }
+
+    public function waitFor($pid, $hang = true)
+    {
+        if (!isset($this->forks[$pid])) {
+            throw new \InvalidArgumentException('There is no fork with PID '.$pid);
+        }
+
+        return $this->forks[$pid]->wait($hang);
     }
 }

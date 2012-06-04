@@ -14,6 +14,7 @@ namespace Spork;
 use Spork\Deferred\Deferred;
 use Spork\Deferred\DeferredInterface;
 use Spork\Exception\ForkException;
+use Spork\Exception\ProcessControlException;
 
 class Fork implements DeferredInterface
 {
@@ -48,9 +49,37 @@ class Fork implements DeferredInterface
 
     public function wait($hang = true)
     {
-        if ($this->pid === pcntl_waitpid($this->pid, $this->status, ($hang ? 0 : WNOHANG) | WUNTRACED)) {
+        if ($this->isExited()) {
+            return $this;
+        }
+
+        if (-1 === $pid = pcntl_waitpid($this->pid, $status, ($hang ? 0 : WNOHANG) | WUNTRACED)) {
+            throw new ProcessControlException('Error while waiting for process '.$this->pid);
+        }
+
+        if ($this->pid === $pid) {
+            $this->processWaitStatus($status);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Processes a status value retrieved while waiting for this fork to exit.
+     */
+    public function processWaitStatus($status)
+    {
+        if ($this->isExited()) {
+            throw new \LogicException('Cannot set status on an exited fork');
+        }
+
+        $this->status = $status;
+
+        if ($this->isExited()) {
             list($this->result, $this->output, $this->error) = $this->fifo->receive();
             $this->fifo->close();
+
+            $this->isSuccessful() ? $this->resolve() : $this->reject();
 
             if ($this->debug && $this->error) {
                 throw new ForkException($this->name, $this->pid, $this->error);
