@@ -12,15 +12,23 @@
 namespace Spork\Batch;
 
 use Spork\Exception\UnexpectedTypeException;
+use Spork\Fifo;
 
-/**
- * Runs a single batch.
- */
 class BatchRunner
 {
     private $batch;
     private $callback;
 
+    /**
+     * Constructor.
+     *
+     * The callback should be a callable with the following signature:
+     *
+     *     function($item, $index, $batch, $fifo)
+     *
+     * @param mixed    $batch    The batch
+     * @param callable $callback The callback
+     */
     public function __construct($batch, $callback)
     {
         if (!is_callable($callback)) {
@@ -31,7 +39,7 @@ class BatchRunner
         $this->callback = $callback;
     }
 
-    public function __invoke()
+    public function __invoke(Fifo $fifo)
     {
         // lazy batch...
         if ($this->batch instanceof \Closure) {
@@ -40,7 +48,7 @@ class BatchRunner
 
         $results = array();
         foreach ($this->batch as $index => $item) {
-            $results[$index] = call_user_func($this->callback, $item, $index, $this->batch);
+            $results[$index] = call_user_func($this->callback, $item, $index, $this->batch, $fifo);
         }
 
         return $results;

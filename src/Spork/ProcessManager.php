@@ -100,7 +100,7 @@ class ProcessManager
             ob_start();
 
             try {
-                $result = call_user_func($callable);
+                $result = call_user_func($callable, $fifo);
                 $exitStatus = is_integer($result) ? $result : 0;
                 $error = null;
             } catch (\Exception $e) {
