@@ -24,10 +24,10 @@ multiple batches and spread them across many processes.
 ```php
 <?php
 
-$images = new RecursiveDirectoryIterator('/path/to/images');
-$images = new RecursiveIteratorIterator($it);
+$files = new RecursiveDirectoryIterator('/path/to/images');
+$files = new RecursiveIteratorIterator($files);
 
-$manager->process($images, function(SplFileInfo $file) {
+$manager->process($files, function(SplFileInfo $file) {
     // upload this file
 });
 ```
