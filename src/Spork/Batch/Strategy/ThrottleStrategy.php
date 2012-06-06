@@ -26,7 +26,7 @@ class ThrottleStrategy implements StrategyInterface
 
     public function createBatches($data)
     {
-        $batches = $this->delegate->getBatches($data);
+        $batches = $this->delegate->createBatches($data);
 
         // wrap each batch in the throttle iterator
         foreach ($batches as $i => $batch) {
