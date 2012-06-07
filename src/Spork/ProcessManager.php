@@ -115,8 +115,11 @@ class ProcessManager
                 );
             }
 
+            $output = ob_get_contents();
+            $this->debug ? ob_end_flush() : ob_end_clean();
+
             // phone home
-            $fifo->send(array($result, ob_get_clean(), $error));
+            $fifo->send(array($result, $output, $error));
             $fifo->close();
 
             exit($exitStatus);

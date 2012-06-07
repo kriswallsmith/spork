@@ -20,7 +20,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->manager = new ProcessManager(new EventDispatcher(), true);
+        $this->manager = new ProcessManager(new EventDispatcher());
     }
 
     protected function tearDown()
@@ -50,7 +50,6 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testFailCallbacks()
     {
-        $this->manager->setDebug(false);
         $success = null;
 
         $fork = $this->manager->fork(function() {
