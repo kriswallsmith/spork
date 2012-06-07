@@ -18,6 +18,7 @@ class ThrottleIterator implements \OuterIterator
 {
     private $inner;
     private $threshold;
+    private $lastThrottle;
 
     public function __construct($inner, $threshold)
     {
@@ -58,7 +59,10 @@ class ThrottleIterator implements \OuterIterator
 
     public function current()
     {
-        $this->throttle();
+        // only throttle every 5s
+        if ($this->lastThrottle < time() - 5) {
+            $this->throttle();
+        }
 
         return $this->getInnerIterator()->current();
     }
@@ -97,6 +101,8 @@ class ThrottleIterator implements \OuterIterator
 
     private function throttle($period = 1)
     {
+        $this->lastThrottle = time();
+
         if ($this->threshold <= $this->getLoad()) {
             $this->sleep($period);
             $this->throttle($period * 2);
