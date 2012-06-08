@@ -18,12 +18,12 @@ use Spork\Exception\UnexpectedTypeException;
  */
 class ChunkStrategy extends AbstractStrategy
 {
-    private $size;
+    private $forks;
     private $preserveKeys;
 
-    public function __construct($size = 3, $preserveKeys = false)
+    public function __construct($forks = 3, $preserveKeys = false)
     {
-        $this->size = $size;
+        $this->forks = $forks;
         $this->preserveKeys = $preserveKeys;
     }
 
@@ -37,6 +37,8 @@ class ChunkStrategy extends AbstractStrategy
             $data = iterator_to_array($data);
         }
 
-        return array_chunk($data, $this->size, $this->preserveKeys);
+        $size = ceil(count($data) / $this->forks);
+
+        return array_chunk($data, $size, $this->preserveKeys);
     }
 }
