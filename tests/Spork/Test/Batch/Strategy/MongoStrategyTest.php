@@ -23,11 +23,16 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        if (!class_exists('Mongo', false)) {
-            $this->markTestSkipped('Mongo is not installed');
+        if (!extension_loaded('mongo')) {
+            $this->markTestSkipped('Mongo extension is not loaded');
         }
 
-        $this->mongo = new \Mongo();
+        try {
+            $this->mongo = new \Mongo();
+        } catch (\MongoConnectionException $e) {
+            $this->markTestSkipped($e->getMessage());
+        }
+
         $this->manager = new ProcessManager(new EventDispatcher(), true);
 
         // close the connection prior to forking
