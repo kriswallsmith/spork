@@ -11,6 +11,8 @@
 
 namespace Spork\Util;
 
+use Spork\Exception\UnexpectedTypeException;
+
 /**
  * Throttles iteration based on a system load threshold.
  */
