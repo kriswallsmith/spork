@@ -20,7 +20,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->manager = new ProcessManager(new EventDispatcher());
+        $this->manager = new ProcessManager();
     }
 
     protected function tearDown()

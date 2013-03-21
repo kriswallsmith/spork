@@ -14,6 +14,7 @@ namespace Spork;
 use Spork\Batch\BatchJob;
 use Spork\Batch\Strategy\StrategyInterface;
 use Spork\Deferred\DeferredInterface;
+use Spork\EventDispatcher\EventDispatcher;
 use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
 use Spork\Exception\ProcessControlException;
@@ -26,9 +27,9 @@ class ProcessManager
     private $zombieOkay;
     private $forks;
 
-    public function __construct(EventDispatcherInterface $dispatcher, $debug = false)
+    public function __construct(EventDispatcherInterface $dispatcher = null, $debug = false)
     {
-        $this->dispatcher = $dispatcher;
+        $this->dispatcher = $dispatcher ?: new EventDispatcher();
         $this->debug = $debug;
         $this->zombieOkay = false;
         $this->forks = array();

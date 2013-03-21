@@ -33,7 +33,8 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped($e->getMessage());
         }
 
-        $this->manager = new ProcessManager(new EventDispatcher(), true);
+        $this->manager = new ProcessManager();
+        $this->manager->setDebug(true);
 
         // close the connection prior to forking
         $this->manager->addListener(Events::PRE_FORK, array($this->mongo, 'close'));
