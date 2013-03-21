@@ -47,6 +47,11 @@ class Fork implements DeferredInterface
         return $this;
     }
 
+    public function getPid()
+    {
+        return $this->pid;
+    }
+
     public function wait($hang = true)
     {
         if ($this->isExited()) {
