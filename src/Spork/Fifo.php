@@ -41,7 +41,19 @@ class Fifo
                 throw new ProcessControlException(sprintf('Error while creating FIFO: %s (%d)', posix_strerror($error), $error));
             }
 
-            $this->$mode = fopen($fifo, $mode[0]);
+            $retriesLimit = 10;
+            $retriesCounter = 0;
+            while (($this->$mode = fopen($fifo, $mode[0])) === false) {
+                if ($retriesCounter > $retriesLimit) {
+                    throw new ProcessControlException(sprintf(
+                        'Error while opening file %s in mode %s',
+                        $fifo,
+                        $mode[0]
+                    ));
+                }
+                ++$retriesCounter;
+                usleep(1000);
+            }
         }
     }
 
