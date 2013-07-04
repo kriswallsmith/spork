@@ -48,6 +48,17 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('result', $fork->getResult());
     }
 
+    public function testForkWithArguments()
+    {
+        $fork = $this->manager->fork(function ($fifo, $argument) {
+            return $argument;
+        }, 'hello');
+
+        $fork->wait();
+
+        $this->assertEquals('hello', $fork->getResult());
+    }
+
     public function testFailCallbacks()
     {
         $success = null;
