@@ -74,12 +74,15 @@ class ProcessManager
 
     /**
      * Forks something into another process and returns a deferred object.
+     *
+     * @param callable $callable
      */
-    public function fork($callable)
+    public function fork($callable /*, $parameter, $parameter2 */)
     {
         if (!is_callable($callable)) {
             throw new UnexpectedTypeException($callable, 'callable');
         }
+
 
         // allow the system to cleanup before forking
         $this->dispatcher->dispatch(Events::PRE_FORK);
@@ -95,13 +98,16 @@ class ProcessManager
             // setup the fifo (blocks until parent connects)
             $fifo = new Fifo();
 
+            $arguments = func_get_args();
+            $arguments[] = $fifo;
+
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::POST_FORK);
 
             ob_start();
 
             try {
-                $result = call_user_func($callable, $fifo);
+                $result = call_user_func_array($callable, array_slice($arguments, 1));
                 $exitStatus = is_integer($result) ? $result : 0;
                 $error = null;
             } catch (\Exception $e) {
