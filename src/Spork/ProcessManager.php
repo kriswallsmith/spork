@@ -99,7 +99,7 @@ class ProcessManager
             $fifo = new Fifo();
 
             $arguments = func_get_args();
-            $arguments[0] = $fifo;
+            $arguments[] = $fifo;
 
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::POST_FORK);
@@ -107,7 +107,7 @@ class ProcessManager
             ob_start();
 
             try {
-                $result = call_user_func_array($callable, $arguments);
+                $result = call_user_func_array($callable, array_slice($arguments, 1));
                 $exitStatus = is_integer($result) ? $result : 0;
                 $error = null;
             } catch (\Exception $e) {

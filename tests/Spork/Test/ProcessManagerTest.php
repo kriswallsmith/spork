@@ -50,7 +50,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testForkWithArguments()
     {
-        $fork = $this->manager->fork(function ($fifo, $argument) {
+        $fork = $this->manager->fork(function ($argument, $fifo) {
             return $argument;
         }, 'hello');
 
