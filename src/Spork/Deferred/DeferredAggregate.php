@@ -49,6 +49,13 @@ class DeferredAggregate implements PromiseInterface
         return $this->children;
     }
 
+    public function progress($progress)
+    {
+        $this->delegate->progress($progress);
+
+        return $this;
+    }
+
     public function always($always)
     {
         $this->delegate->always($always);

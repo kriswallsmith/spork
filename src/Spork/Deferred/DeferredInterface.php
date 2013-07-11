@@ -14,6 +14,16 @@ namespace Spork\Deferred;
 interface DeferredInterface extends PromiseInterface
 {
     /**
+     * Notifies the promise of progress.
+     *
+     * @param mixed $args Any arguments will be passed along to the callbacks
+     *
+     * @return DeferredInterface The current promise
+     * @throws \LogicException   If the promise is not pending
+     */
+    function notify();
+
+    /**
      * Marks the current promise as successful.
      *
      * Calls "always" callbacks first, followed by "done" callbacks.

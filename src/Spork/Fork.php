@@ -197,6 +197,13 @@ class Fork implements DeferredInterface
         return $this->defer->getState();
     }
 
+    public function progress($progress)
+    {
+        $this->defer->progress($progress);
+
+        return $this;
+    }
+
     public function always($always)
     {
         $this->defer->always($always);
@@ -221,6 +228,16 @@ class Fork implements DeferredInterface
     public function then($done, $fail = null)
     {
         $this->defer->then($done, $fail);
+
+        return $this;
+    }
+
+    public function notify()
+    {
+        $args = func_get_args();
+        array_unshift($args, $this);
+
+        call_user_func_array(array($this->defer, 'notify'), $args);
 
         return $this;
     }

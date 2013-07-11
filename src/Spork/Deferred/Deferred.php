@@ -16,6 +16,7 @@ use Spork\Exception\UnexpectedTypeException;
 class Deferred implements DeferredInterface
 {
     private $state;
+    private $progressCallbacks;
     private $alwaysCallbacks;
     private $doneCallbacks;
     private $failCallbacks;
@@ -25,6 +26,7 @@ class Deferred implements DeferredInterface
     {
         $this->state = DeferredInterface::STATE_PENDING;
 
+        $this->progressCallbacks = array();
         $this->alwaysCallbacks = array();
         $this->doneCallbacks = array();
         $this->failCallbacks = array();
@@ -33,6 +35,17 @@ class Deferred implements DeferredInterface
     public function getState()
     {
         return $this->state;
+    }
+
+    public function progress($progress)
+    {
+        if (!is_callable($progress)) {
+            throw new UnexpectedTypeException($progress, 'callable');
+        }
+
+        $this->progressCallbacks[] = $progress;
+
+        return $this;
     }
 
     public function always($always)
@@ -94,6 +107,20 @@ class Deferred implements DeferredInterface
 
         if ($fail) {
             $this->fail($fail);
+        }
+
+        return $this;
+    }
+
+    public function notify()
+    {
+        if (DeferredInterface::STATE_PENDING !== $this->state) {
+            throw new \LogicException('Cannot notify a deferred object that is no longer pending');
+        }
+
+        $args = func_get_args();
+        foreach ($this->progressCallbacks as $func) {
+            call_user_func_array($func, $args);
         }
 
         return $this;

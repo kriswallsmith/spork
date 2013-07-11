@@ -29,6 +29,15 @@ interface PromiseInterface
     function getState();
 
     /**
+     * Adds a callback to be called upon progress.
+     *
+     * @param callable $progress The callback
+     *
+     * @return PromiseInterface The current promise
+     */
+    function progress($progress);
+
+    /**
      * Adds a callback to be called whether the promise is resolved or rejected.
      *
      * The callback will be called immediately if the promise is no longer
