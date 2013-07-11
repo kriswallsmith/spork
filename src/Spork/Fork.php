@@ -83,6 +83,7 @@ class Fork implements DeferredInterface
         if ($this->isExited()) {
             list($this->result, $this->output, $this->error) = $this->fifo->receive();
             $this->fifo->close();
+            $this->fifo->cleanup();
 
             $this->isSuccessful() ? $this->resolve() : $this->reject();
 
