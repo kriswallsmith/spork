@@ -159,23 +159,23 @@ class Fork implements DeferredInterface
         return $this->defer->getState();
     }
 
-    public function always($callback)
+    public function always($always)
     {
-        $this->defer->always($callback);
+        $this->defer->always($always);
 
         return $this;
     }
 
-    public function done($callback)
+    public function done($done)
     {
-        $this->defer->done($callback);
+        $this->defer->done($done);
 
         return $this;
     }
 
-    public function fail($callback)
+    public function fail($fail)
     {
-        $this->defer->fail($callback);
+        $this->defer->fail($fail);
 
         return $this;
     }

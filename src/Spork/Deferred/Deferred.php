@@ -35,65 +35,65 @@ class Deferred implements DeferredInterface
         return $this->state;
     }
 
-    public function always($alwaysCallback)
+    public function always($always)
     {
-        if (!is_callable($alwaysCallback)) {
-            throw new UnexpectedTypeException($alwaysCallback, 'callable');
+        if (!is_callable($always)) {
+            throw new UnexpectedTypeException($always, 'callable');
         }
 
         switch ($this->state) {
             case DeferredInterface::STATE_PENDING:
-                $this->alwaysCallbacks[] = $alwaysCallback;
+                $this->alwaysCallbacks[] = $always;
                 break;
             default:
-                call_user_func_array($alwaysCallback, $this->callbackArgs);
+                call_user_func_array($always, $this->callbackArgs);
                 break;
         }
 
         return $this;
     }
 
-    public function done($doneCallback)
+    public function done($done)
     {
-        if (!is_callable($doneCallback)) {
-            throw new UnexpectedTypeException($doneCallback, 'callable');
+        if (!is_callable($done)) {
+            throw new UnexpectedTypeException($done, 'callable');
         }
 
         switch ($this->state) {
             case DeferredInterface::STATE_PENDING:
-                $this->doneCallbacks[] = $doneCallback;
+                $this->doneCallbacks[] = $done;
                 break;
             case DeferredInterface::STATE_RESOLVED:
-                call_user_func_array($doneCallback, $this->callbackArgs);
+                call_user_func_array($done, $this->callbackArgs);
         }
 
         return $this;
     }
 
-    public function fail($failCallback)
+    public function fail($fail)
     {
-        if (!is_callable($failCallback)) {
-            throw new UnexpectedTypeException($failCallback, 'callable');
+        if (!is_callable($fail)) {
+            throw new UnexpectedTypeException($fail, 'callable');
         }
 
         switch ($this->state) {
             case DeferredInterface::STATE_PENDING:
-                $this->failCallbacks[] = $failCallback;
+                $this->failCallbacks[] = $fail;
                 break;
             case DeferredInterface::STATE_REJECTED:
-                call_user_func_array($failCallback, $this->callbackArgs);
+                call_user_func_array($fail, $this->callbackArgs);
                 break;
         }
 
         return $this;
     }
 
-    public function then($doneCallback, $failCallback = null)
+    public function then($done, $fail = null)
     {
-        $this->done($doneCallback);
+        $this->done($done);
 
-        if ($failCallback) {
-            $this->fail($failCallback);
+        if ($fail) {
+            $this->fail($fail);
         }
 
         return $this;

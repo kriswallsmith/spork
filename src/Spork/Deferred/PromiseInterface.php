@@ -18,8 +18,8 @@ interface PromiseInterface
     const STATE_REJECTED = 'rejected';
 
     function getState();
-    function always($alwaysCallback);
-    function done($doneCallback);
-    function fail($failCallback);
-    function then($doneCallback, $failCallback = null);
+    function always($always);
+    function done($done);
+    function fail($fail);
+    function then($done, $fail = null);
 }

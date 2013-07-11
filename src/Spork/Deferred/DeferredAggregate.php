@@ -49,30 +49,30 @@ class DeferredAggregate implements PromiseInterface
         return $this->children;
     }
 
-    public function always($alwaysCallback)
+    public function always($always)
     {
-        $this->delegate->always($alwaysCallback);
+        $this->delegate->always($always);
 
         return $this;
     }
 
-    public function done($doneCallback)
+    public function done($done)
     {
-        $this->delegate->done($doneCallback);
+        $this->delegate->done($done);
 
         return $this;
     }
 
-    public function fail($failCallback)
+    public function fail($fail)
     {
-        $this->delegate->fail($failCallback);
+        $this->delegate->fail($fail);
 
         return $this;
     }
 
-    public function then($doneCallback, $failCallback = null)
+    public function then($done, $fail = null)
     {
-        $this->delegate->then($doneCallback, $failCallback);
+        $this->delegate->then($done, $fail);
 
         return $this;
     }
