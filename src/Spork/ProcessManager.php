@@ -120,7 +120,21 @@ class ProcessManager
             $this->debug ? ob_end_flush() : ob_end_clean();
 
             // phone home
-            $fifo->send(array($result, $output, $error));
+            try {
+                $fifo->send(array($result, $output, $error));
+            } catch (\Exception $e) {
+                // probably an error serializing the result
+                $result = null;
+                $exitStatus = 1;
+                $fifo->send(array($result, $output, array(
+                    get_class($e),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine(),
+                    $e->getCode(),
+                )));
+            }
+
             $fifo->close();
 
             exit($exitStatus);

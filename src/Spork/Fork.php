@@ -87,7 +87,7 @@ class Fork implements DeferredInterface
 
             $this->isSuccessful() ? $this->resolve() : $this->reject();
 
-            if ($this->debug && $this->error) {
+            if ($this->debug && (!$this->isSuccessful() || $this->error)) {
                 throw new ForkException($this->name, $this->pid, $this->error);
             }
         }

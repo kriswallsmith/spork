@@ -66,6 +66,18 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($fork->getError());
     }
 
+    public function testObjectReturn()
+    {
+        $fork = $this->manager->fork(function() {
+            return new Unserializable();
+        });
+
+        $this->manager->wait();
+
+        $this->assertNull($fork->getResult());
+        $this->assertFalse($fork->isSuccessful());
+    }
+
     public function testBatchProcessing()
     {
         $expected = range(100, 109);
@@ -77,5 +89,13 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         $this->manager->wait();
 
         $this->assertEquals($expected, $fork->getResult());
+    }
+}
+
+class Unserializable
+{
+    public function __sleep()
+    {
+        throw new \Exception('Hey, don\'t serialize me!');
     }
 }
