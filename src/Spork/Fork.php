@@ -95,7 +95,11 @@ class Fork implements DeferredInterface
 
     public function kill($signal = SIGINT)
     {
-        return $this->fifo->signal($signal);
+        if (false === $this->fifo->signal($signal)) {
+            throw new ProcessControlException('Unable to send signal');
+        }
+
+        return $this;
     }
 
     public function getResult()
