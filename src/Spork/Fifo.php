@@ -16,6 +16,7 @@ use Spork\Exception\ProcessControlException;
 class Fifo
 {
     private $pid;
+    private $ppid;
     private $read;
     private $write;
 
@@ -26,13 +27,16 @@ class Fifo
         if (null === $pid) {
             // child
             $pid   = posix_getpid();
+            $ppid  = posix_getppid();
             $modes = array('write', 'read');
         } else {
             // parent
+            $ppid  = null;
             $modes = array('read', 'write');
         }
 
-        $this->pid = $pid;
+        $this->pid  = $pid;
+        $this->ppid = $ppid;
 
         foreach (array_combine($directions, $modes) as $direction => $mode) {
             $fifo = $this->getPath($direction);
@@ -79,11 +83,13 @@ class Fifo
     }
 
     /**
-     * Sends a signal to the process.
+     * Sends a signal to the other process.
      */
     public function signal($signal)
     {
-        return posix_kill($this->pid, $signal);
+        $pid = null === $this->ppid ? $this->pid : $this->ppid;
+
+        return posix_kill($pid, $signal);
     }
 
     public function close()
