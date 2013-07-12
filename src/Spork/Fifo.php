@@ -45,7 +45,7 @@ class Fifo
                 throw new ProcessControlException(sprintf('Error while creating FIFO: %s (%d)', posix_strerror($error), $error));
             }
 
-            if (false === $this->$mode = @fopen($fifo, $mode[0])) {
+            if (false === $this->$mode = fopen($fifo, $mode[0])) {
                 throw new \RuntimeException(sprintf('Unable to open %s FIFO.', $mode));
             }
         }
