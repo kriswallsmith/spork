@@ -49,7 +49,11 @@ class ProcessManager
 
     public function addListener($eventName, $listener, $priority = 0)
     {
-        $this->dispatcher->addListener($eventName, $listener, $priority);
+        if (is_integer($eventName)) {
+            $this->dispatcher->addSignalListener($eventName, $listener, $priority);
+        } else {
+            $this->dispatcher->addListener($eventName, $listener, $priority);
+        }
     }
 
     public function setDebug($debug)
