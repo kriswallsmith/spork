@@ -19,6 +19,8 @@ use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
 use Spork\Exception\ProcessControlException;
 use Spork\Exception\UnexpectedTypeException;
+use Spork\Util\Error;
+use Spork\Util\ExitMessage;
 
 class ProcessManager
 {
@@ -104,44 +106,35 @@ class ProcessManager
 
             ob_start();
 
+            $message = new ExitMessage();
             try {
                 $result = call_user_func($callable, $fifo);
-                $exitStatus = is_integer($result) ? $result : 0;
-                $error = null;
+
+                $message->setResult($result);
+                $status = is_integer($result) ? $result : 0;
             } catch (\Exception $e) {
-                $result = null;
-                $exitStatus = 1;
-                $error = array(
-                    get_class($e),
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine(),
-                    $e->getCode(),
-                );
+                $message->setError(Error::fromException($e));
+                $status = 1;
             }
 
-            $output = ob_get_contents();
+            $message->setOutput(ob_get_contents());
             $this->debug ? ob_end_flush() : ob_end_clean();
 
             // phone home
             try {
-                $fifo->send(array($result, $output, $error));
+                $fifo->send($message);
             } catch (\Exception $e) {
                 // probably an error serializing the result
-                $result = null;
-                $exitStatus = 1;
-                $fifo->send(array($result, $output, array(
-                    get_class($e),
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine(),
-                    $e->getCode(),
-                )));
+                $message->setResult(null);
+                $message->setError(Error::fromException($e));
+                $status = 1;
+
+                $fifo->send($message);
             }
 
             $fifo->close();
 
-            exit($exitStatus);
+            exit($status);
         }
 
         // connect to the fifo

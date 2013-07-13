@@ -11,6 +11,8 @@
 
 namespace Spork\Exception;
 
+use Spork\Util\Error;
+
 /**
  * Turns an error passed through a FIFO into an exception.
  */
@@ -20,31 +22,29 @@ class ForkException extends \RuntimeException
     private $pid;
     private $error;
 
-    public function __construct($name, $pid, array $error = null)
+    public function __construct($name, $pid, Error $error = null)
     {
         $this->name = $name;
         $this->pid = $pid;
         $this->error = $error;
 
-        if ($this->error) {
-            list($class, $message, $file, $line, $code) = $this->error;
-
-            if (__CLASS__ === $class) {
-                parent::__construct(sprintf(
-                    '%s via "%s" fork (%d)',
-                    $message, $this->name, $this->pid
-                ));
+        if ($error) {
+            if (__CLASS__ === $error->getClass()) {
+                parent::__construct(sprintf('%s via "%s" fork (%d)', $error->getMessage(), $name, $pid));
             } else {
                 parent::__construct(sprintf(
                     '%s (%d) thrown in "%s" fork (%d): "%s" (%s:%d)',
-                    $class, $code, $this->name, $this->pid, $message, $file, $line
+                    $error->getClass(),
+                    $error->getCode(),
+                    $name,
+                    $pid,
+                    $error->getMessage(),
+                    $error->getFile(),
+                    $error->getLine()
                 ));
             }
         } else {
-            parent::__construct(sprintf(
-                'An unknown error occurred in "%s" fork (%d)',
-                $this->name, $this->pid
-            ));
+            parent::__construct(sprintf('An unknown error occurred in "%s" fork (%d)', $name, $pid));
         }
     }
 

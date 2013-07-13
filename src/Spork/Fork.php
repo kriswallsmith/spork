@@ -24,9 +24,7 @@ class Fork implements DeferredInterface
     private $debug;
     private $name;
     private $status;
-    private $result;
-    private $output;
-    private $error;
+    private $message;
 
     public function __construct($pid, Fifo $fifo, $debug = false)
     {
@@ -81,14 +79,14 @@ class Fork implements DeferredInterface
         $this->status = $status;
 
         if ($this->isExited()) {
-            list($this->result, $this->output, $this->error) = $this->fifo->receive();
+            $this->message = $this->fifo->receive();
             $this->fifo->close();
             $this->fifo->cleanup();
 
             $this->isSuccessful() ? $this->resolve() : $this->reject();
 
-            if ($this->debug && (!$this->isSuccessful() || $this->error)) {
-                throw new ForkException($this->name, $this->pid, $this->error);
+            if ($this->debug && (!$this->isSuccessful() || $this->getError())) {
+                throw new ForkException($this->name, $this->pid, $this->getError());
             }
         }
     }
@@ -104,17 +102,23 @@ class Fork implements DeferredInterface
 
     public function getResult()
     {
-        return $this->result;
+        if ($this->message) {
+            return $this->message->getResult();
+        }
     }
 
     public function getOutput()
     {
-        return $this->output;
+        if ($this->message) {
+            return $this->message->getOutput();
+        }
     }
 
     public function getError()
     {
-        return $this->error;
+        if ($this->message) {
+            return $this->message->getError();
+        }
     }
 
     public function isSuccessful()
