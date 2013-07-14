@@ -15,6 +15,7 @@ use Spork\Deferred\Deferred;
 use Spork\Deferred\DeferredInterface;
 use Spork\Exception\ForkException;
 use Spork\Exception\ProcessControlException;
+use Spork\Util\ExitMessage;
 
 class Fork implements DeferredInterface
 {
@@ -79,7 +80,8 @@ class Fork implements DeferredInterface
         $this->status = $status;
 
         if ($this->isExited()) {
-            $this->message = $this->fifo->receive();
+            $this->receiveMany();
+
             $this->fifo->close();
             $this->fifo->cleanup();
 
@@ -89,6 +91,34 @@ class Fork implements DeferredInterface
                 throw new ForkException($this->name, $this->pid, $this->getError());
             }
         }
+    }
+
+    public function receiveOne()
+    {
+        $message = $this->fifo->receiveOne($success);
+
+        if (!$success) {
+            return;
+        } elseif ($message instanceof ExitMessage) {
+            $this->message = $message;
+        } else {
+            return $message;
+        }
+    }
+
+    public function receiveMany()
+    {
+        $messages = array();
+
+        foreach ($this->fifo->receiveMany() as $message) {
+            if ($message instanceof ExitMessage) {
+                $this->message = $message;
+            } else {
+                $messages[] = $message;
+            }
+        }
+
+        return $messages;
     }
 
     public function kill($signal = SIGINT)

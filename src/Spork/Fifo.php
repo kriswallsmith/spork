@@ -13,6 +13,9 @@ namespace Spork;
 
 use Spork\Exception\ProcessControlException;
 
+/**
+ * Sends messages between processes.
+ */
 class Fifo
 {
     private $pid;
@@ -20,6 +23,12 @@ class Fifo
     private $read;
     private $write;
 
+    /**
+     * Constructor.
+     *
+     * @param integer $pid    The child process id or null if this is the child
+     * @param integer $signal The signal to send after writing to the FIFO
+     */
     public function __construct($pid = null)
     {
         $directions = array('up', 'down');
@@ -56,29 +65,58 @@ class Fifo
         $this->close();
     }
 
-    public function receive()
+    /**
+     * Reads one message from the FIFO.
+     *
+     * @return mixed The message, or null
+     */
+    public function receiveOne(& $success)
     {
-        if (false === $data = stream_get_contents($this->read)) {
-            throw new ProcessControlException('Unable to read from FIFO');
+        $success = true;
+
+        $serialized = '';
+        while (false !== $data = fgets($this->read)) {
+            $serialized .= $data;
+
+            if ('b:0;' === $serialized) {
+                return false;
+            }
+
+            if (false !== $message = @unserialize($serialized)) {
+                return $message;
+            }
         }
 
-        return unserialize($data);
+        $success = false;
     }
 
     /**
-     * Writes data to the FIFO and optionally signals the process.
+     * Reads all messages from the FIFO.
      *
-     * @param mixed $data   The data to send
-     * @param mixed $signal A signal to send upon writing
+     * @return array An array of messages
      */
-    public function send($data, $signal = null)
+    public function receiveMany()
     {
-        if (false === fwrite($this->write, serialize($data))) {
-            throw new ProcessControlException('Unable to write to FIFO');
-        }
+        $messages = array();
 
-        if (null !== $signal) {
-            $this->signal($signal);
+        do {
+            $messages[] = $this->receiveOne($success);
+        } while($success);
+
+        array_pop($messages);
+
+        return $messages;
+    }
+
+    /**
+     * Writes a message to the FIFO.
+     *
+     * @param mixed $message The message to send
+     */
+    public function send($message)
+    {
+        if (false === fwrite($this->write, serialize($message)."\n")) {
+            throw new ProcessControlException('Unable to write to FIFO');
         }
     }
 
