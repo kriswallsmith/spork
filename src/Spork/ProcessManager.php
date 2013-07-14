@@ -100,6 +100,24 @@ class ProcessManager
 
             // setup the fifo (blocks until parent connects)
             $fifo = new Fifo();
+            $message = new ExitMessage();
+
+            // phone home on shutdown
+            register_shutdown_function(function() use(&$fifo, &$message) {
+                $status = null;
+
+                try {
+                    $fifo->send($message);
+                } catch (\Exception $e) {
+                    // probably an error serializing the result
+                    $message->setResult(null);
+                    $message->setError(Error::fromException($e));
+
+                    $fifo->send($message);
+
+                    exit(2);
+                }
+            });
 
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::POST_FORK);
@@ -108,7 +126,6 @@ class ProcessManager
                 ob_start();
             }
 
-            $message = new ExitMessage();
             try {
                 $result = call_user_func($callable, $fifo);
 
@@ -122,20 +139,6 @@ class ProcessManager
             if (!$this->debug) {
                 $message->setOutput(ob_get_clean());
             }
-
-            // phone home
-            try {
-                $fifo->send($message);
-            } catch (\Exception $e) {
-                // probably an error serializing the result
-                $message->setResult(null);
-                $message->setError(Error::fromException($e));
-                $status = 1;
-
-                $fifo->send($message);
-            }
-
-            $fifo->close();
 
             exit($status);
         }
