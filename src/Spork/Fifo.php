@@ -22,6 +22,7 @@ class Fifo
     private $ppid;
     private $read;
     private $write;
+    private $signal;
 
     /**
      * Constructor.
@@ -29,7 +30,7 @@ class Fifo
      * @param integer $pid    The child process id or null if this is the child
      * @param integer $signal The signal to send after writing to the FIFO
      */
-    public function __construct($pid = null)
+    public function __construct($pid = null, $signal = null)
     {
         $directions = array('up', 'down');
 
@@ -58,6 +59,8 @@ class Fifo
                 throw new \RuntimeException(sprintf('Unable to open %s FIFO.', $mode));
             }
         }
+
+        $this->signal = $signal;
     }
 
     public function __destruct()
@@ -111,13 +114,22 @@ class Fifo
     /**
      * Writes a message to the FIFO.
      *
-     * @param mixed $message The message to send
+     * @param mixed   $message The message to send
+     * @param integer $signal  The signal to send afterward
+     * @param integer $pause   The number of microseconds to pause after signalling
      */
-    public function send($message)
+    public function send($message, $signal = null, $pause = 500)
     {
         if (false === fwrite($this->write, serialize($message)."\n")) {
             throw new ProcessControlException('Unable to write to FIFO');
         }
+
+        if (false === $signal) {
+            return;
+        }
+
+        $this->signal($signal ?: $this->signal);
+        usleep($pause);
     }
 
     /**
