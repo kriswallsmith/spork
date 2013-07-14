@@ -104,7 +104,9 @@ class ProcessManager
             // dispatch an event so the system knows it's in a new process
             $this->dispatcher->dispatch(Events::POST_FORK);
 
-            ob_start();
+            if (!$this->debug) {
+                ob_start();
+            }
 
             $message = new ExitMessage();
             try {
@@ -117,8 +119,9 @@ class ProcessManager
                 $status = 1;
             }
 
-            $message->setOutput(ob_get_contents());
-            $this->debug ? ob_end_flush() : ob_end_clean();
+            if (!$this->debug) {
+                $message->setOutput(ob_get_clean());
+            }
 
             // phone home
             try {
