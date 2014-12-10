@@ -21,7 +21,7 @@ interface StrategyInterface
      *
      * @param mixed $data The raw batch data
      *
-     * @return array|Traversable An iterator of batches
+     * @return array|\Traversable An iterator of batches
      */
     function createBatches($data);
 
