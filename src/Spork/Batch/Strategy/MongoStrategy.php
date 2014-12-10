@@ -49,7 +49,7 @@ class MongoStrategy extends AbstractStrategy
         }
 
         $skip  = $this->skip;
-        $limit = ceil(($cursor->count() - $skip) / $this->size);
+        $limit = ceil(($cursor->count(true) - $skip) / $this->size);
 
         $batches = array();
         for ($i = 0; $i < $this->size; $i++) {
