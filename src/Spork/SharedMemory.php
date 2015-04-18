@@ -89,7 +89,7 @@ class SharedMemory
         $shmId = shmop_open($this->pid, 'c', 0644, strlen($serializedMessage));
         if (!$shmId) {
             throw new ProcessControlException(sprintf('Not able to create shared memory segment for PID: %s', $this->pid));
-        } else if (shmop_write($shmId, $serializedMessage, 0) !== strlen($serializedMessage)) {
+        } elseif (shmop_write($shmId, $serializedMessage, 0) !== strlen($serializedMessage)) {
             throw new ProcessControlException(
                 sprintf('Not able to write message to shared memory segment for segment ID: %s', $shmId)
             );

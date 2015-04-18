@@ -106,7 +106,7 @@ class ProcessManager
             $message = new ExitMessage();
 
             // phone home on shutdown
-            register_shutdown_function(function() use($shm, $message) {
+            register_shutdown_function(function () use ($shm, $message) {
                 $status = null;
 
                 try {

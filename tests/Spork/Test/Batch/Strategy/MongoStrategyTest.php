@@ -37,7 +37,7 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
 
         // close the connection prior to forking
         $mongo = $this->mongo;
-        $this->manager->addListener(Events::PRE_FORK, function() use($mongo) {
+        $this->manager->addListener(Events::PRE_FORK, function () use ($mongo) {
             $mongo->close();
         });
     }
@@ -63,7 +63,7 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
         ));
 
         $this->manager->createBatchJob($coll->find(), new MongoStrategy())
-            ->execute(function($doc) use($coll) {
+            ->execute(function ($doc) use ($coll) {
                 $coll->update(
                     array('_id' => $doc['_id']),
                     array('$set' => array('seen' => true))

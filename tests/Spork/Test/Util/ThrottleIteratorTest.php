@@ -11,8 +11,6 @@
 
 namespace Spork\Test\Util;
 
-use Spork\Util\ThrottleIterator;
-
 class ThrottleIteratorTest extends \PHPUnit_Framework_TestCase
 {
     private $iterator;
@@ -32,21 +30,5 @@ class ThrottleIteratorTest extends \PHPUnit_Framework_TestCase
     {
         iterator_to_array($this->iterator);
         $this->assertEquals(array(1, 2, 4), $this->iterator->sleeps);
-    }
-}
-
-class ThrottleIteratorStub extends ThrottleIterator
-{
-    public $loads = array();
-    public $sleeps = array();
-
-    protected function getLoad()
-    {
-        return (integer) array_shift($this->loads);
-    }
-
-    protected function sleep($period)
-    {
-        $this->sleeps[] = $period;
     }
 }
