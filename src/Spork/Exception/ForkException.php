@@ -14,7 +14,7 @@ namespace Spork\Exception;
 use Spork\Util\Error;
 
 /**
- * Turns an error passed through a FIFO into an exception.
+ * Turns an error passed through shared memory into an exception.
  */
 class ForkException extends \RuntimeException
 {

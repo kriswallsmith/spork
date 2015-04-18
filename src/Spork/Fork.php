@@ -21,19 +21,19 @@ class Fork implements DeferredInterface
 {
     private $defer;
     private $pid;
-    private $fifo;
+    private $sharedMem;
     private $debug;
     private $name;
     private $status;
     private $message;
 
-    public function __construct($pid, Fifo $fifo, $debug = false)
+    public function __construct($pid, SharedMem $sharedMem, $debug = false)
     {
-        $this->defer = new Deferred();
-        $this->pid   = $pid;
-        $this->fifo  = $fifo;
-        $this->debug = $debug;
-        $this->name  = '<anonymous>';
+        $this->defer     = new Deferred();
+        $this->pid       = $pid;
+        $this->sharedMem = $sharedMem;
+        $this->debug     = $debug;
+        $this->name      = '<anonymous>';
     }
 
     /**
@@ -80,10 +80,7 @@ class Fork implements DeferredInterface
         $this->status = $status;
 
         if ($this->isExited()) {
-            $this->receiveMany();
-
-            $this->fifo->close();
-            $this->fifo->cleanup();
+            $this->receiveMessages();
 
             $this->isSuccessful() ? $this->resolve() : $this->reject();
 
@@ -93,24 +90,11 @@ class Fork implements DeferredInterface
         }
     }
 
-    public function receiveOne()
-    {
-        $message = $this->fifo->receiveOne($success);
-
-        if (!$success) {
-            return;
-        } elseif ($message instanceof ExitMessage) {
-            $this->message = $message;
-        } else {
-            return $message;
-        }
-    }
-
-    public function receiveMany()
+    public function receiveMessages()
     {
         $messages = array();
 
-        foreach ($this->fifo->receiveMany() as $message) {
+        foreach ($this->sharedMem->receiveMessages() as $message) {
             if ($message instanceof ExitMessage) {
                 $this->message = $message;
             } else {
@@ -123,7 +107,7 @@ class Fork implements DeferredInterface
 
     public function kill($signal = SIGINT)
     {
-        if (false === $this->fifo->signal($signal)) {
+        if (false === $this->sharedMem->signal($signal)) {
             throw new ProcessControlException('Unable to send signal');
         }
 

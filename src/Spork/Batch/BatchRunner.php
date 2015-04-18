@@ -12,7 +12,7 @@
 namespace Spork\Batch;
 
 use Spork\Exception\UnexpectedTypeException;
-use Spork\Fifo;
+use Spork\SharedMem;
 
 class BatchRunner
 {
@@ -24,7 +24,7 @@ class BatchRunner
      *
      * The callback should be a callable with the following signature:
      *
-     *     function($item, $index, $batch, $fifo)
+     *     function($item, $index, $batch, $sharedMem)
      *
      * @param mixed    $batch    The batch
      * @param callable $callback The callback
@@ -39,7 +39,7 @@ class BatchRunner
         $this->callback = $callback;
     }
 
-    public function __invoke(Fifo $fifo)
+    public function __invoke(SharedMem $sharedMem)
     {
         // lazy batch...
         if ($this->batch instanceof \Closure) {
@@ -48,7 +48,7 @@ class BatchRunner
 
         $results = array();
         foreach ($this->batch as $index => $item) {
-            $results[$index] = call_user_func($this->callback, $item, $index, $this->batch, $fifo);
+            $results[$index] = call_user_func($this->callback, $item, $index, $this->batch, $sharedMem);
         }
 
         return $results;

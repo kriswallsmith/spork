@@ -13,7 +13,7 @@ namespace Spork\Test;
 
 use Spork\ProcessManager;
 
-class FifoTest extends \PHPUnit_Framework_TestCase
+class SignalTest extends \PHPUnit_Framework_TestCase
 {
     private $manager;
 
@@ -34,8 +34,8 @@ class FifoTest extends \PHPUnit_Framework_TestCase
             $signaled = true;
         });
 
-        $this->manager->fork(function($fifo) {
-            $fifo->signal(SIGUSR1);
+        $this->manager->fork(function($sharedMem) {
+            $sharedMem->signal(SIGUSR1);
         });
 
         $this->manager->wait();
