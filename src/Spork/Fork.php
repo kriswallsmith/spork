@@ -21,19 +21,19 @@ class Fork implements DeferredInterface
 {
     private $defer;
     private $pid;
-    private $sharedMem;
+    private $shm;
     private $debug;
     private $name;
     private $status;
     private $message;
 
-    public function __construct($pid, SharedMem $sharedMem, $debug = false)
+    public function __construct($pid, SharedMemory $shm, $debug = false)
     {
-        $this->defer     = new Deferred();
-        $this->pid       = $pid;
-        $this->sharedMem = $sharedMem;
-        $this->debug     = $debug;
-        $this->name      = '<anonymous>';
+        $this->defer = new Deferred();
+        $this->pid   = $pid;
+        $this->shm   = $shm;
+        $this->debug = $debug;
+        $this->name  = '<anonymous>';
     }
 
     /**
@@ -94,7 +94,7 @@ class Fork implements DeferredInterface
     {
         $messages = array();
 
-        foreach ($this->sharedMem->receiveMessages() as $message) {
+        foreach ($this->shm->receiveMessages() as $message) {
             if ($message instanceof ExitMessage) {
                 $this->message = $message;
             } else {
@@ -107,7 +107,7 @@ class Fork implements DeferredInterface
 
     public function kill($signal = SIGINT)
     {
-        if (false === $this->sharedMem->signal($signal)) {
+        if (false === $this->shm->signal($signal)) {
             throw new ProcessControlException('Unable to send signal');
         }
 

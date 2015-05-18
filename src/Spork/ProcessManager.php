@@ -100,21 +100,21 @@ class ProcessManager
             $this->forks = array();
 
             // setup the shared memory
-            $sharedMem = new SharedMem(null, $this->signal);
+            $shm = new SharedMemory(null, $this->signal);
             $message = new ExitMessage();
 
             // phone home on shutdown
-            register_shutdown_function(function() use($sharedMem, $message) {
+            register_shutdown_function(function() use($shm, $message) {
                 $status = null;
 
                 try {
-                    $sharedMem->send($message, false);
+                    $shm->send($message, false);
                 } catch (\Exception $e) {
                     // probably an error serializing the result
                     $message->setResult(null);
                     $message->setError(Error::fromException($e));
 
-                    $sharedMem->send($message, false);
+                    $shm->send($message, false);
 
                     exit(2);
                 }
@@ -128,7 +128,7 @@ class ProcessManager
             }
 
             try {
-                $result = call_user_func($callable, $sharedMem);
+                $result = call_user_func($callable, $shm);
 
                 $message->setResult($result);
                 $status = is_integer($result) ? $result : 0;
@@ -145,9 +145,9 @@ class ProcessManager
         }
 
         // connect to shared memory
-        $sharedMem = new SharedMem($pid);
+        $shm = new SharedMemory($pid);
 
-        return $this->forks[$pid] = new Fork($pid, $sharedMem, $this->debug);
+        return $this->forks[$pid] = new Fork($pid, $shm, $this->debug);
     }
 
     public function monitor($signal = SIGUSR1)

@@ -16,7 +16,7 @@ use Spork\Exception\ProcessControlException;
 /**
  * Sends messages between processes.
  */
-class SharedMem
+class SharedMemory
 {
     private $pid;
     private $ppid;
