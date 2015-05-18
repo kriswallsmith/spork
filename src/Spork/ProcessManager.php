@@ -160,7 +160,7 @@ class ProcessManager
     public function check()
     {
         foreach ($this->forks as $fork) {
-            foreach ($fork->receiveMany() as $message) {
+            foreach ($fork->receive() as $message) {
                 $fork->notify($message);
             }
         }

@@ -80,7 +80,7 @@ class Fork implements DeferredInterface
         $this->status = $status;
 
         if ($this->isExited()) {
-            $this->receiveMessages();
+            $this->receive();
 
             $this->isSuccessful() ? $this->resolve() : $this->reject();
 
@@ -90,11 +90,11 @@ class Fork implements DeferredInterface
         }
     }
 
-    public function receiveMessages()
+    public function receive()
     {
         $messages = array();
 
-        foreach ($this->shm->receiveMessages() as $message) {
+        foreach ($this->shm->receive() as $message) {
             if ($message instanceof ExitMessage) {
                 $this->message = $message;
             } else {

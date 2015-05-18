@@ -49,7 +49,7 @@ class SharedMemory
      *
      * @return array An array of messages
      */
-    public function receiveMessages()
+    public function receive()
     {
         if (($shmId = @shmop_open($this->pid, 'a', 0, 0)) > 0) {
             $serializedMessages = shmop_read($shmId, 0, shmop_size($shmId));
