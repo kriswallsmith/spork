@@ -26,8 +26,10 @@ class ProcessManager
     private $dispatcher;
     private $debug;
     private $zombieOkay;
-    private $forks;
     private $signal;
+
+    /** @var Fork[] */
+    private $forks;
 
     public function __construct(EventDispatcherInterface $dispatcher = null, $debug = false)
     {
