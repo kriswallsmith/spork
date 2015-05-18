@@ -23,12 +23,12 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        if (!extension_loaded('mongo')) {
+        if (!class_exists('MongoClient', false)) {
             $this->markTestSkipped('Mongo extension is not loaded');
         }
 
         try {
-            $this->mongo = new \Mongo();
+            $this->mongo = new \MongoClient();
         } catch (\MongoConnectionException $e) {
             $this->markTestSkipped($e->getMessage());
         }
@@ -37,7 +37,10 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
         $this->manager->setDebug(true);
 
         // close the connection prior to forking
-        $this->manager->addListener(Events::PRE_FORK, array($this->mongo, 'close'));
+        $mongo = $this->mongo;
+        $this->manager->addListener(Events::PRE_FORK, function() use($mongo) {
+            $mongo->close();
+        });
     }
 
     protected function tearDown()
@@ -64,8 +67,7 @@ class MongoStrategyTest extends \PHPUnit_Framework_TestCase
             ->execute(function($doc) use($coll) {
                 $coll->update(
                     array('_id' => $doc['_id']),
-                    array('$set' => array('seen' => true)),
-                    array('safe' => true)
+                    array('$set' => array('seen' => true))
                 );
             });
 
