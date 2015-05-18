@@ -13,7 +13,6 @@ namespace Spork;
 
 use Spork\Batch\BatchJob;
 use Spork\Batch\Strategy\StrategyInterface;
-use Spork\Deferred\DeferredInterface;
 use Spork\EventDispatcher\EventDispatcher;
 use Spork\EventDispatcher\EventDispatcherInterface;
 use Spork\EventDispatcher\Events;
