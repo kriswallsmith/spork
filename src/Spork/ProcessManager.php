@@ -11,7 +11,6 @@
 
 namespace Spork;
 
-use Spork\Batch\BatchJob;
 use Spork\Batch\Strategy\StrategyInterface;
 use Spork\EventDispatcher\EventDispatcher;
 use Spork\EventDispatcher\EventDispatcherInterface;
@@ -24,6 +23,7 @@ use Spork\Util\ExitMessage;
 class ProcessManager
 {
     private $dispatcher;
+    private $factory;
     private $debug;
     private $zombieOkay;
     private $signal;
@@ -31,9 +31,10 @@ class ProcessManager
     /** @var Fork[] */
     private $forks;
 
-    public function __construct(EventDispatcherInterface $dispatcher = null, $debug = false)
+    public function __construct(EventDispatcherInterface $dispatcher = null, Factory $factory = null, $debug = false)
     {
         $this->dispatcher = $dispatcher ?: new EventDispatcher();
+        $this->factory = $factory ?: new Factory();
         $this->debug = $debug;
         $this->zombieOkay = false;
         $this->forks = array();
@@ -72,7 +73,7 @@ class ProcessManager
 
     public function createBatchJob($data = null, StrategyInterface $strategy = null)
     {
-        return new BatchJob($this, $data, $strategy);
+        return $this->factory->createBatchJob($this, $data, $strategy);
     }
 
     public function process($data, $callable, StrategyInterface $strategy = null)
@@ -101,7 +102,7 @@ class ProcessManager
             $this->forks = array();
 
             // setup the shared memory
-            $shm = new SharedMemory(null, $this->signal);
+            $shm = $this->factory->createSharedMemory(null, $this->signal);
             $message = new ExitMessage();
 
             // phone home on shutdown
@@ -146,9 +147,9 @@ class ProcessManager
         }
 
         // connect to shared memory
-        $shm = new SharedMemory($pid);
+        $shm = $this->factory->createSharedMemory($pid);
 
-        return $this->forks[$pid] = new Fork($pid, $shm, $this->debug);
+        return $this->forks[$pid] = $this->factory->createFork($pid, $shm, $this->debug);
     }
 
     public function monitor($signal = SIGUSR1)
