@@ -12,7 +12,6 @@
 namespace Spork\Test\Batch\Strategy;
 
 use Spork\Batch\Strategy\MongoStrategy;
-use Spork\EventDispatcher\EventDispatcher;
 use Spork\EventDispatcher\Events;
 use Spork\ProcessManager;
 

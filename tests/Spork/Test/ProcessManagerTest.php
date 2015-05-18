@@ -13,7 +13,6 @@ namespace Spork\Test;
 
 use Spork\Fork;
 use Spork\ProcessManager;
-use Spork\EventDispatcher\EventDispatcher;
 
 class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 {
