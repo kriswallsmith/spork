@@ -21,7 +21,7 @@ interface DeferredInterface extends PromiseInterface
      * @return DeferredInterface The current promise
      * @throws \LogicException   If the promise is not pending
      */
-    function notify();
+    public function notify();
 
     /**
      * Marks the current promise as successful.
@@ -33,7 +33,7 @@ interface DeferredInterface extends PromiseInterface
      * @return DeferredInterface The current promise
      * @throws \LogicException   If the promise was previously rejected
      */
-    function resolve();
+    public function resolve();
 
     /**
      * Marks the current promise as failed.
@@ -45,5 +45,5 @@ interface DeferredInterface extends PromiseInterface
      * @return DeferredInterface The current promise
      * @throws \LogicException   If the promise was previously resolved
      */
-    function reject();
+    public function reject();
 }

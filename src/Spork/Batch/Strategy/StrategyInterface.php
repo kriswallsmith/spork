@@ -23,7 +23,7 @@ interface StrategyInterface
      *
      * @return array|\Traversable An iterator of batches
      */
-    function createBatches($data);
+    public function createBatches($data);
 
     /**
      * Creates a batch runner for the supplied list.
@@ -36,5 +36,5 @@ interface StrategyInterface
      *
      * @return callable A callable for the child process
      */
-    function createRunner($batch, $callback);
+    public function createRunner($batch, $callback);
 }

@@ -37,12 +37,12 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
     {
         $success = null;
 
-        $fork = $this->manager->fork(function() {
+        $fork = $this->manager->fork(function () {
             echo 'output';
             return 'result';
-        })->done(function() use(& $success) {
+        })->done(function () use (& $success) {
             $success = true;
-        })->fail(function() use(& $success) {
+        })->fail(function () use (& $success) {
             $success = false;
         });
 
@@ -57,11 +57,11 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
     {
         $success = null;
 
-        $fork = $this->manager->fork(function() {
+        $fork = $this->manager->fork(function () {
             throw new \Exception('child error');
-        })->done(function() use(& $success) {
+        })->done(function () use (& $success) {
             $success = true;
-        })->fail(function() use(& $success) {
+        })->fail(function () use (& $success) {
             $success = false;
         });
 
@@ -73,7 +73,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testObjectReturn()
     {
-        $fork = $this->manager->fork(function() {
+        $fork = $this->manager->fork(function () {
             return new Unserializable();
         });
 
@@ -87,7 +87,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
     {
         $expected = range(100, 109);
 
-        $fork = $this->manager->process($expected, function($item) {
+        $fork = $this->manager->process($expected, function ($item) {
             return $item;
         });
 
@@ -116,7 +116,7 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->manager->setDebug(true);
-        $fork = $this->manager->process($range, function($item) {
+        $fork = $this->manager->process($range, function ($item) {
             return "SomeString\n$item";
         });
 
@@ -153,20 +153,12 @@ class ProcessManagerTest extends \PHPUnit_Framework_TestCase
         $expected = array_fill(0, $rangeEnd, null);
 
         /** @var Fork $fork */
-        $fork = $this->manager->process($expected, function($item) {
+        $fork = $this->manager->process($expected, function ($item) {
             return $item;
         });
 
         $this->manager->wait();
 
         $this->assertEquals($expected, $fork->getResult());
-    }
-}
-
-class Unserializable
-{
-    public function __sleep()
-    {
-        throw new \Exception('Hey, don\'t serialize me!');
     }
 }

@@ -34,13 +34,13 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
     {
         $log = array();
 
-        $this->defer->always(function() use(& $log) {
+        $this->defer->always(function () use (& $log) {
             $log[] = 'always';
             $log[] = func_get_args();
-        })->done(function() use(& $log) {
+        })->done(function () use (& $log) {
             $log[] = 'done';
             $log[] = func_get_args();
-        })->fail(function() use(& $log) {
+        })->fail(function () use (& $log) {
             $log[] = 'fail';
             $log[] = func_get_args();
         });
@@ -62,9 +62,9 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
     {
         $log = array();
 
-        $this->defer->then(function() use(& $log) {
+        $this->defer->then(function () use (& $log) {
             $log[] = 'done';
-        }, function() use(& $log) {
+        }, function () use (& $log) {
             $log[] = 'fail';
         });
 
@@ -80,7 +80,7 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
     {
         $log = array();
 
-        $this->defer->always(function() use(& $log) {
+        $this->defer->always(function () use (& $log) {
             $log[] = 'always';
         });
 
@@ -110,7 +110,7 @@ class DeferredTest extends \PHPUnit_Framework_TestCase
         $this->defer->$resolve();
 
         $log = array();
-        $this->defer->$queue(function() use(& $log, $queue) {
+        $this->defer->$queue(function () use (& $log, $queue) {
             $log[] = $queue;
         });
 

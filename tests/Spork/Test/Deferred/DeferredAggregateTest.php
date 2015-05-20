@@ -28,7 +28,7 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $defer = new DeferredAggregate(array());
 
         $log = array();
-        $defer->done(function() use(& $log) {
+        $defer->done(function () use (& $log) {
             $log[] = 'done';
         });
 
@@ -43,7 +43,7 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $defer = new DeferredAggregate(array($child));
 
         $log = array();
-        $defer->done(function() use(& $log) {
+        $defer->done(function () use (& $log) {
             $log[] = 'done';
         });
 
@@ -58,7 +58,7 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $defer = new DeferredAggregate(array($child1, $child2));
 
         $log = array();
-        $defer->done(function() use(& $log) {
+        $defer->done(function () use (& $log) {
             $log[] = 'done';
         });
 
@@ -80,9 +80,9 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $defer = new DeferredAggregate(array($child1, $child2, $child3));
 
         $log = array();
-        $defer->then(function() use(& $log) {
+        $defer->then(function () use (& $log) {
             $log[] = 'done';
-        }, function() use(& $log) {
+        }, function () use (& $log) {
             $log[] = 'fail';
         });
 
@@ -120,7 +120,7 @@ class DeferredAggregateTest extends \PHPUnit_Framework_TestCase
         $defer = new DeferredAggregate(array($child));
 
         $log = array();
-        $defer->fail(function() use(& $log) {
+        $defer->fail(function () use (& $log) {
             $log[] = 'fail';
         });
 

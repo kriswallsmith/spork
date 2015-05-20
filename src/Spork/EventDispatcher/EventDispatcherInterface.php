@@ -15,7 +15,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface as BaseEventDispa
 
 interface EventDispatcherInterface extends BaseEventDispatcherInterface
 {
-    function dispatchSignal($signal);
-    function addSignalListener($signal, $callable, $priority = 0);
-    function removeSignalListener($signal, $callable);
+    public function dispatchSignal($signal);
+    public function addSignalListener($signal, $callable, $priority = 0);
+    public function removeSignalListener($signal, $callable);
 }

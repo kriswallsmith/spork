@@ -30,11 +30,11 @@ class SignalTest extends \PHPUnit_Framework_TestCase
     public function testSignalParent()
     {
         $signaled = false;
-        $this->manager->addListener(SIGUSR1, function() use(& $signaled) {
+        $this->manager->addListener(SIGUSR1, function () use (& $signaled) {
             $signaled = true;
         });
 
-        $this->manager->fork(function($sharedMem) {
+        $this->manager->fork(function ($sharedMem) {
             $sharedMem->signal(SIGUSR1);
         });
 
