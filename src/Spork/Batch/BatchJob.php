@@ -93,7 +93,12 @@ class BatchJob
 
         $results = array();
         foreach ($forks as $fork) {
-            $results = array_merge($results, $fork->getResult());
+            $exitStatus = $fork->getExitStatus();
+            if (0 !== $exitStatus) {
+                // Propagate erroneous state
+                exit($exitStatus);
+            }
+            $results = array_merge($results, (array) $fork->getResult());
         }
 
         return $results;
