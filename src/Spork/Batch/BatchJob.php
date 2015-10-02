@@ -93,7 +93,18 @@ class BatchJob
 
         $results = array();
         foreach ($forks as $fork) {
-            $results = array_merge($results, $fork->getResult());
+
+            $exitStatus = $fork->getExitStatus();
+            if (0 !== $exitStatus) {
+                if ($error = $fork->getError()) {
+                    // Unfortunately the original exception is lost and Error is not throwable
+                    throw new \RuntimeException($error->getMessage());
+                }
+
+                return $exitStatus;
+            }
+
+            $results = array_merge($results, (array) $fork->getResult());
         }
 
         return $results;
