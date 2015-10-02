@@ -93,11 +93,17 @@ class BatchJob
 
         $results = array();
         foreach ($forks as $fork) {
+
             $exitStatus = $fork->getExitStatus();
             if (0 !== $exitStatus) {
-                // Propagate erroneous state
-                exit($exitStatus);
+                if ($error = $fork->getError()) {
+                    // Unfortunately the original exception is lost and Error is not throwable
+                    throw new \RuntimeException($error->getMessage());
+                }
+
+                return $exitStatus;
             }
+
             $results = array_merge($results, (array) $fork->getResult());
         }
 
