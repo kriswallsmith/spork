@@ -76,4 +76,9 @@ class WrappedEventDispatcher implements EventDispatcherInterface
     {
         return $this->delegate->hasListeners($eventName);
     }
+
+    public function getListenerPriority($eventName, $listener)
+    {
+        return $this->delegate->getListenerPriority($eventName, $listener);
+    }
 }
