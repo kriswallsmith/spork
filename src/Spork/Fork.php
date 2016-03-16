@@ -26,6 +26,7 @@ class Fork implements DeferredInterface
     private $name;
     private $status;
     private $message;
+    private $messages = array();
 
     public function __construct($pid, SharedMemory $shm, $debug = false)
     {
@@ -92,17 +93,15 @@ class Fork implements DeferredInterface
 
     public function receive()
     {
-        $messages = array();
-
         foreach ($this->shm->receive() as $message) {
             if ($message instanceof ExitMessage) {
                 $this->message = $message;
             } else {
-                $messages[] = $message;
+                $this->messages[] = $message;
             }
         }
 
-        return $messages;
+        return $this->messages;
     }
 
     public function kill($signal = SIGINT)
@@ -133,6 +132,11 @@ class Fork implements DeferredInterface
         if ($this->message) {
             return $this->message->getError();
         }
+    }
+
+    public function getMessages()
+    {
+        return $this->messages;
     }
 
     public function isSuccessful()
