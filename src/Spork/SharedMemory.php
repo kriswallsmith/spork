@@ -76,7 +76,7 @@ class SharedMemory
         if (($shmId = @shmop_open($this->pid, 'a', 0, 0)) > 0) {
             // Read any existing messages in shared memory
             $readMessage = shmop_read($shmId, 0, shmop_size($shmId));
-            $messageArray[] = unserialize($readMessage);
+            $messageArray = unserialize($readMessage);
             shmop_delete($shmId);
             shmop_close($shmId);
         }
